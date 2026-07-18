@@ -10,15 +10,19 @@ export async function POST(request: Request) {
       .insert([body])
       .select();
 
-        if (error) {
-          console.log("Supabase Error:", error);
-          throw error;
-        }
+    if (error) {
+      console.log("Supabase Error:", error);
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: 400 },
+      );
+    }
 
     return NextResponse.json({ success: true, data }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
+    console.log("Server Error:", error);
     return NextResponse.json(
-      { success: false, error: String(error) },
+      { success: false, error: error.message || "Something went wrong" },
       { status: 500 },
     );
   }
