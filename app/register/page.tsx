@@ -80,7 +80,8 @@ export default function RegisterPage() {
     if (res.ok) {
       router.push("/success");
     } else {
-      alert("Registration failed. Try again!");
+      const errorText = await res.text();
+      alert("Registration failed: " + errorText);
     }
     setLoading(false);
   };
