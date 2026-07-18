@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Pie, Bar } from "react-chartjs-2";
+import dynamic from "next/dynamic";
+
+// Register Chart.js components
 import {
   Chart as ChartJS,
   ArcElement,
@@ -14,7 +16,6 @@ import {
   Title,
 } from "chart.js";
 
-// Register Chart.js components
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -24,6 +25,14 @@ ChartJS.register(
   BarElement,
   Title,
 );
+
+// --- LOAD CHARTS ONLY ON BROWSER (Fixes Vercel build error) ---
+const Pie = dynamic(() => import("react-chartjs-2").then((mod) => mod.Pie), {
+  ssr: false,
+});
+const Bar = dynamic(() => import("react-chartjs-2").then((mod) => mod.Bar), {
+  ssr: false,
+});
 
 // --- ADMIN PASSWORD (Change this to whatever you want) ---
 const ADMIN_PASSWORD = "BCA2026";
@@ -77,7 +86,7 @@ export default function DashboardPage() {
             table: "students",
           },
           () => {
-            fetchStudents(); // Refresh data when a new student registers
+            fetchStudents();
           },
         )
         .subscribe();
