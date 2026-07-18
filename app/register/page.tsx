@@ -1,182 +1,260 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { useRouter } from "next/navigation";
 
-interface FormData {
-  name: string;
-  email: string;
-  phone: string;
-  department: string;
-  semester: number;
-  domain_interest: string[];
-  suggestions: string;
-}
+// --- ADMIN PASSWORD ---
+const ADMIN_PASSWORD = "BCA2026";
 
-export default function RegisterPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState<FormData>({
-    name: "",
-    email: "",
-    phone: "",
-    department: "",
-    semester: 1,
-    domain_interest: [],
-    suggestions: "",
-  });
-  const [file, setFile] = useState<File | null>(null);
+export default function DashboardPage() {
+  const [students, setStudents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [passwordInput, setPasswordInput] = useState("");
+  const [error, setError] = useState("");
 
-  const handleChange = (e: any) => {
-    const { name, value, type, checked } = e.target;
-    if (type === "checkbox") {
-      const arr = form.domain_interest as string[];
-        if (checked) {
-            setForm({ ...form, domain_interest: [...form.domain_interest, value] });
-        } else {
-            setForm({
-              ...form,
-              domain_interest: form.domain_interest.filter((v) => v !== value),
-            });
-        }
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordInput === ADMIN_PASSWORD) {
+      setIsAuthenticated(true);
+      setError("");
     } else {
-      setForm({ ...form, [name]: value });
+      setError("❌ Incorrect password. Try again.");
     }
   };
 
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
+  const fetchStudents = async () => {
     setLoading(true);
+    const { data, error } = await supabase
+      .from("students")
+      .select("*")
+      .order("registered_at", { ascending: false });
 
-    let photo_url = "";
-    let photo_path = "";
-
-    if (file) {
-      const ext = file.name.split(".").pop();
-      const path = `public/${Date.now()}.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from("student-photos")
-        .upload(path, file);
-
-      if (!uploadError) {
-        const { data: urlData } = supabase.storage
-          .from("student-photos")
-          .getPublicUrl(path);
-        photo_url = urlData.publicUrl;
-        photo_path = path;
-      }
-    }
-
-        const payload = {
-          name: form.name,
-          email: form.email,
-          phone: form.phone,
-          department: form.department,
-          semester: Number(form.semester),
-          domain_interest: form.domain_interest,
-          suggestions: form.suggestions,
-          photo_url,
-          photo_path,
-        };
-    const res = await fetch("/api/register", {
-      method: "POST",
-      body: JSON.stringify(payload),
-      headers: { "Content-Type": "application/json" },
-    });
-
-    if (res.ok) {
-      router.push("/success");
+    if (error) {
+      console.error("Error fetching students:", error);
     } else {
-      alert("Registration failed. Try again!");
+      setStudents(data || []);
     }
     setLoading(false);
   };
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchStudents();
+
+      const channel = supabase
+        .channel("students-changes")
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "students",
+          },
+          () => {
+            fetchStudents();
+          },
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [isAuthenticated]);
+
+  const total = students.length;
+
+  // --- Department & Domain Stats (Text-based) ---
+  const deptMap: Record<string, number> = {};
+  students.forEach((s) => {
+    deptMap[s.department] = (deptMap[s.department] || 0) + 1;
+  });
+
+  const domainMap: Record<string, number> = {};
+  students.forEach((s) => {
+    if (s.domain_interest && Array.isArray(s.domain_interest)) {
+      s.domain_interest.forEach((d: string) => {
+        domainMap[d] = (domainMap[d] || 0) + 1;
+      });
+    }
+  });
+
+  // --- LOGIN SCREEN ---
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-2xl shadow-xl max-w-sm w-full border-t-8 border-[#87CEEB]">
+          <h1 className="text-2xl font-bold text-center text-[#4A9FD8]">
+            🔐 Admin Dashboard
+          </h1>
+          <p className="text-center text-gray-500 mb-6">
+            Enter the admin password to view analytics
+          </p>
+          <form onSubmit={handleLogin}>
+            <input
+              type="password"
+              placeholder="Enter password..."
+              value={passwordInput}
+              onChange={(e) => setPasswordInput(e.target.value)}
+              className="w-full p-3 border rounded-xl mb-4"
+              required
+            />
+            {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
+            <button
+              type="submit"
+              className="w-full bg-[#87CEEB] hover:bg-[#4A9FD8] text-white font-bold py-3 rounded-xl transition"
+            >
+              Unlock Dashboard
+            </button>
+          </form>
+          <p className="text-xs text-gray-400 mt-4 text-center">
+            Hint: The password is "BCA2026"
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // --- DASHBOARD ---
   return (
-    <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center p-4">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border-t-8 border-[#87CEEB]"
-      >
-        <h1 className="text-3xl font-bold text-center text-[#4A9FD8]">
-          📝 Join IT Club
-        </h1>
-        <p className="text-center text-gray-500 mb-6">BCA Department</p>
-
-        <input
-          name="name"
-          placeholder="Full Name"
-          onChange={handleChange}
-          className="w-full p-3 mb-3 border rounded-xl"
-          required
-        />
-        <input
-          name="email"
-          type="email"
-          placeholder="College Email"
-          onChange={handleChange}
-          className="w-full p-3 mb-3 border rounded-xl"
-          required
-        />
-        <input
-          name="phone"
-          placeholder="Phone Number"
-          onChange={handleChange}
-          className="w-full p-3 mb-3 border rounded-xl"
-          required
-        />
-        <input
-          name="department"
-          placeholder="Department (e.g., BCA)"
-          onChange={handleChange}
-          className="w-full p-3 mb-3 border rounded-xl"
-          required
-        />
-        <input
-          name="semester"
-          type="number"
-          placeholder="Semester"
-          onChange={handleChange}
-          className="w-full p-3 mb-3 border rounded-xl"
-          required
-        />
-
-        <p className="font-semibold mt-2">Select Interests:</p>
-        <div className="flex flex-wrap gap-2 mb-3">
-          {["Web Dev", "AI/ML", "Cybersecurity", "Cloud", "App Dev"].map(
-            (d) => (
-              <label
-                key={d}
-                className="flex items-center gap-1 bg-[#F5F0E8] px-3 py-1 rounded-full"
-              >
-                <input type="checkbox" value={d} onChange={handleChange} /> {d}
-              </label>
-            ),
-          )}
+    <div className="min-h-screen bg-[#FDFBF7] p-4 md:p-8">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-[#4A9FD8]">
+              📊 IT Club Dashboard
+            </h1>
+            <p className="text-gray-500">
+              BCA Department • Real-time Analytics
+            </p>
+          </div>
+          <div className="bg-[#87CEEB] text-white px-4 py-2 rounded-xl font-bold">
+            👥 {total} Registered
+          </div>
         </div>
 
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setFile(e.target.files?.[0] || null)}
-          className="w-full p-2 border rounded-xl mb-3"
-          required
-        />
-        <textarea
-          name="suggestions"
-          placeholder="Suggestions for the club?"
-          onChange={handleChange}
-          className="w-full p-3 border rounded-xl mb-4"
-        ></textarea>
+        {loading ? (
+          <div className="text-center py-20 text-gray-400">Loading data...</div>
+        ) : (
+          <>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="bg-white p-6 rounded-2xl shadow-xl border-t-4 border-[#87CEEB]">
+                <h2 className="text-lg font-bold mb-4 text-center">
+                  🏛️ Departments
+                </h2>
+                {Object.keys(deptMap).length > 0 ? (
+                  <ul className="space-y-2">
+                    {Object.entries(deptMap).map(([dept, count]) => (
+                      <li
+                        key={dept}
+                        className="flex justify-between border-b border-gray-100 py-2"
+                      >
+                        <span className="font-medium">{dept}</span>
+                        <span className="bg-[#87CEEB] px-3 py-1 rounded-full text-sm text-white">
+                          {count}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-center text-gray-400">
+                    No departments yet.
+                  </p>
+                )}
+              </div>
 
-        <button
-          type="submit"
-          className="w-full bg-[#87CEEB] hover:bg-[#4A9FD8] text-white font-bold py-3 rounded-xl transition"
-        >
-          {loading ? "Registering..." : "🚀 Register & Join WhatsApp"}
-        </button>
-      </form>
+              <div className="bg-white p-6 rounded-2xl shadow-xl border-t-4 border-[#4A9FD8]">
+                <h2 className="text-lg font-bold mb-4 text-center">
+                  🎯 Domain Interests
+                </h2>
+                {Object.keys(domainMap).length > 0 ? (
+                  <ul className="space-y-2">
+                    {Object.entries(domainMap).map(([domain, count]) => (
+                      <li
+                        key={domain}
+                        className="flex justify-between border-b border-gray-100 py-2"
+                      >
+                        <span className="font-medium">{domain}</span>
+                        <span className="bg-[#4A9FD8] px-3 py-1 rounded-full text-sm text-white">
+                          {count}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-center text-gray-400">No interests yet.</p>
+                )}
+              </div>
+            </div>
+
+            {/* Suggestions Feed */}
+            <div className="bg-white p-6 rounded-2xl shadow-xl border-t-4 border-[#F5F0E8] mb-6">
+              <h2 className="text-lg font-bold mb-4">💬 Student Suggestions</h2>
+              {students.some(
+                (s) => s.suggestions && s.suggestions.trim() !== "",
+              ) ? (
+                <div className="max-h-48 overflow-y-auto space-y-2">
+                  {students
+                    .filter((s) => s.suggestions && s.suggestions.trim() !== "")
+                    .map((s, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-[#FDFBF7] p-3 rounded-xl border border-[#F5F0E8]"
+                      >
+                        <p className="text-sm text-gray-700">
+                          "{s.suggestions}"
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          — {s.name} ({s.department})
+                        </p>
+                      </div>
+                    ))}
+                </div>
+              ) : (
+                <p className="text-gray-400 text-center">No suggestions yet.</p>
+              )}
+            </div>
+
+            {/* Student Gallery */}
+            <div className="bg-white p-6 rounded-2xl shadow-xl border-t-8 border-[#87CEEB]">
+              <h2 className="text-lg font-bold mb-4">🖼️ Student Gallery</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {students.map((s, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-[#FDFBF7] rounded-xl border border-[#F5F0E8] overflow-hidden shadow-sm hover:shadow-md transition"
+                  >
+                    {s.photo_url ? (
+                      <img
+                        src={s.photo_url}
+                        alt={s.name}
+                        className="w-full h-48 object-cover bg-gray-100"
+                      />
+                    ) : (
+                      <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-400">
+                        No Photo
+                      </div>
+                    )}
+                    <div className="p-3">
+                      <p className="font-bold text-[#4A9FD8]">{s.name}</p>
+                      <p className="text-sm text-gray-600">
+                        {s.department} • Sem {s.semester}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {s.domain_interest && Array.isArray(s.domain_interest)
+                          ? s.domain_interest.join(", ")
+                          : "No interests"}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
