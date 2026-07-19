@@ -1,5 +1,8 @@
-/* ===== CYBER THEME - PLAIN CSS ===== */
+/* ============================================================
+   CYBER THEME - PURE CSS (No Tailwind dependency)
+   ============================================================ */
 
+/* ----- RESET ----- */
 * {
   margin: 0;
   padding: 0;
@@ -9,11 +12,11 @@
 body {
   background: #0a0a0f;
   color: #ffffff;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   min-height: 100vh;
 }
 
-/* 3D Spinning Animation */
+/* ----- 3D SPINNING LOGO ----- */
 @keyframes spin3D {
   0% { transform: rotateY(0deg) scale(1); }
   50% { transform: rotateY(180deg) scale(1.05); }
@@ -30,26 +33,83 @@ body {
   animation-duration: 2s;
 }
 
-/* ===== CYBER CARD ===== */
+/* ----- LAYOUT ----- */
+.cyber-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: #0a0a0f;
+  position: relative;
+  overflow: hidden;
+}
+
+.cyber-bg-glow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.cyber-bg-glow .glow-1 {
+  position: absolute;
+  top: 25%;
+  left: 25%;
+  width: 24rem;
+  height: 24rem;
+  background: rgba(0, 245, 255, 0.04);
+  border-radius: 9999px;
+  filter: blur(80px);
+  animation: pulse 4s ease-in-out infinite;
+}
+
+.cyber-bg-glow .glow-2 {
+  position: absolute;
+  bottom: 25%;
+  right: 25%;
+  width: 24rem;
+  height: 24rem;
+  background: rgba(180, 77, 255, 0.04);
+  border-radius: 9999px;
+  filter: blur(80px);
+  animation: pulse 4s ease-in-out infinite 1s;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+/* ----- CYBER CARD ----- */
 .cyber-card {
   background: #0f0f1e;
   border-radius: 1.5rem;
   padding: 2rem;
-  border: 1px solid rgba(0, 245, 255, 0.15);
-  box-shadow: 0 0 60px rgba(0, 245, 255, 0.04);
   max-width: 28rem;
   width: 100%;
+  border: 1px solid rgba(0, 245, 255, 0.15);
+  box-shadow: 0 0 60px rgba(0, 245, 255, 0.04);
+  position: relative;
+  z-index: 1;
 }
 
-/* ===== CYBER INPUT ===== */
+.cyber-card.dashboard {
+  max-width: 100%;
+  padding: 1.5rem;
+}
+
+/* ----- CYBER INPUT ----- */
 .cyber-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(0, 245, 255, 0.2);
   color: #ffffff;
-  padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
-  width: 100%;
+  font-size: 0.875rem;
   transition: all 0.3s ease;
+  font-family: inherit;
 }
 
 .cyber-input:focus {
@@ -63,20 +123,26 @@ body {
   color: rgba(255, 255, 255, 0.2);
 }
 
-/* ===== CYBER BUTTON ===== */
+.cyber-input.textarea {
+  height: 5rem;
+  resize: none;
+}
+
+/* ----- CYBER BUTTON ----- */
 .cyber-btn {
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
   background: linear-gradient(135deg, rgba(0, 245, 255, 0.15), rgba(180, 77, 255, 0.15));
   border: 1px solid rgba(0, 245, 255, 0.25);
   color: #ffffff;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.75rem;
-  width: 100%;
-  font-weight: 600;
-  letter-spacing: 2px;
-  text-transform: uppercase;
   font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   transition: all 0.3s ease;
   cursor: pointer;
+  font-family: inherit;
 }
 
 .cyber-btn:hover {
@@ -91,23 +157,48 @@ body {
   cursor: not-allowed;
 }
 
-/* ===== CYBER LABEL ===== */
+/* ----- HEADING ----- */
+.cyber-heading {
+  font-size: 2.5rem;
+  font-weight: 900;
+  text-align: center;
+  background: linear-gradient(135deg, #00f5ff, #b44dff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.05em;
+}
+
+.cyber-heading.small {
+  font-size: 1.5rem;
+}
+
+.cyber-subtitle {
+  text-align: center;
+  color: rgba(0, 245, 255, 0.4);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+/* ----- LABEL ----- */
 .cyber-label {
+  display: block;
   color: rgba(0, 245, 255, 0.6);
   font-size: 0.65rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-weight: 600;
   margin-top: 0.5rem;
-  display: block;
 }
 
-/* ===== CHECKBOX GROUP ===== */
+/* ----- CHECKBOX GROUP ----- */
 .cyber-checkbox-group {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin: 0.5rem 0;
+  margin: 0.5rem 0 0.25rem;
 }
 
 .cyber-checkbox-label {
@@ -132,18 +223,19 @@ body {
   accent-color: #00f5ff;
 }
 
-/* ===== FILE INPUT ===== */
+/* ----- FILE INPUT ----- */
 .cyber-file {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(0, 245, 255, 0.2);
+  width: 100%;
   padding: 0.5rem;
   border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 245, 255, 0.2);
   color: rgba(255, 255, 255, 0.8);
   font-size: 0.75rem;
-  width: 100%;
+  font-family: inherit;
 }
 
-.cyber-file::file-selector-button {
+.cyber-file::-webkit-file-upload-button {
   background: rgba(0, 245, 255, 0.2);
   border: none;
   padding: 0.5rem 1rem;
@@ -153,15 +245,271 @@ body {
   margin-right: 1rem;
   cursor: pointer;
   transition: background 0.2s;
+  font-family: inherit;
 }
 
-.cyber-file::file-selector-button:hover {
+.cyber-file::-webkit-file-upload-button:hover {
   background: rgba(0, 245, 255, 0.3);
 }
 
-/* ===== RESPONSIVE ===== */
-@media (max-width: 640px) {
+/* ----- DASHBOARD SPECIFIC ----- */
+.dashboard-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.dashboard-title span {
+  color: rgba(0, 245, 255, 0.4);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 400;
+}
+
+.dashboard-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dashboard-stats .stat {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(0, 245, 255, 0.1);
+}
+
+.dashboard-stats .stat .label {
+  color: rgba(0, 245, 255, 0.3);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.dashboard-stats .stat .value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.dashboard-logout {
+  color: rgba(0, 245, 255, 0.3);
+  font-size: 0.65rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(0, 245, 255, 0.1);
+  border-radius: 0.75rem;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: inherit;
+}
+
+.dashboard-logout:hover {
+  color: rgba(0, 245, 255, 0.6);
+  border-color: rgba(0, 245, 255, 0.3);
+}
+
+.dashboard-search {
+  display: flex;
+  flex-direction: row;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-search input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 245, 255, 0.2);
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-family: inherit;
+}
+
+.dashboard-search input::placeholder {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.dashboard-search input:focus {
+  outline: none;
+  border-color: #00f5ff;
+}
+
+.dashboard-search select {
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 245, 255, 0.2);
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-family: inherit;
+  min-width: 150px;
+}
+
+.dashboard-search select:focus {
+  outline: none;
+  border-color: #00f5ff;
+}
+
+.dashboard-section {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  border: 1px solid rgba(0, 245, 255, 0.08);
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-section h2 {
+  color: rgba(0, 245, 255, 0.6);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.dashboard-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.dashboard-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.dashboard-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.dashboard-gallery-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 245, 255, 0.05);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
+.dashboard-gallery-item:hover {
+  border-color: rgba(0, 245, 255, 0.2);
+  transform: scale(1.02);
+}
+
+.dashboard-gallery-item img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+
+.dashboard-gallery-item .info {
+  padding: 0.75rem;
+}
+
+.dashboard-gallery-item .info .name {
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 600;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dashboard-gallery-item .info .dept {
+  color: rgba(0, 245, 255, 0.4);
+  font-size: 0.75rem;
+}
+
+.dashboard-leaderboard-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 0.75rem;
+  border: 1px solid rgba(0, 245, 255, 0.05);
+  margin-bottom: 0.5rem;
+}
+
+.dashboard-leaderboard-item .rank {
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.dashboard-leaderboard-item .rank.gold { color: #fbbf24; }
+.dashboard-leaderboard-item .rank.silver { color: #9ca3af; }
+.dashboard-leaderboard-item .rank.bronze { color: #d97706; }
+.dashboard-leaderboard-item .rank.normal { color: rgba(255, 255, 255, 0.4); }
+
+.dashboard-leaderboard-item .name {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.875rem;
+}
+
+.dashboard-leaderboard-item .count {
+  color: #00f5ff;
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+/* ----- RESPONSIVE ----- */
+@media (max-width: 768px) {
   .cyber-card {
     padding: 1.25rem;
+  }
+  .cyber-heading {
+    font-size: 1.8rem;
+  }
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .dashboard-grid-2 {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-grid-3 {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-search {
+    flex-direction: column;
+  }
+  .dashboard-search select {
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .cyber-card {
+    padding: 1rem;
+    border-radius: 1rem;
+  }
+  .cyber-heading {
+    font-size: 1.5rem;
+  }
+  .cyber-btn {
+    font-size: 0.75rem;
+    padding: 0.6rem 1rem;
+  }
+  .cyber-input {
+    font-size: 0.8rem;
+    padding: 0.6rem 0.75rem;
+  }
+  .dashboard-gallery {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
