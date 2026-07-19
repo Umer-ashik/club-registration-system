@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "BCA IT Club",
-  description: "BCA IT Club Registration System",
+  title: "DELITECH IT CLUB",
+  description: "DELITECH IT CLUB Registration System",
 };
 
 export default function RootLayout({
