@@ -33,6 +33,19 @@ ChartJS.register(
   Title,
 );
 
+const ROLES = {
+  ADMIN: "ADMIN",
+  PRESIDENT: "PRESIDENT",
+  VICE_PRESIDENT: "VICE_PRESIDENT",
+  LECTURER: "LECTURER",
+};
+
+const ROLE_PASSWORDS = {
+  admin2026: ROLES.ADMIN,
+  president2026: ROLES.PRESIDENT,
+  vp2026: ROLES.VICE_PRESIDENT,
+  lecturer2026: ROLES.LECTURER,
+};
 
 export default function DashboardPage() {
   const [students, setStudents] = useState([]);
@@ -58,7 +71,7 @@ export default function DashboardPage() {
       setUserRole(role);
       setError("");
     } else {
-      setError("❌ hey get out man. Access denied.");
+      setError("❌ Invalid credentials. Access denied.");
     }
   };
 
@@ -221,7 +234,7 @@ export default function DashboardPage() {
   );
 
   // ============================================================
-  // LOGIN SCREEN
+  // LOGIN SCREEN (UPDATED - Password hints removed)
   // ============================================================
   if (!isAuthenticated) {
     return (
@@ -301,6 +314,7 @@ export default function DashboardPage() {
             </button>
           </form>
 
+          {/* ===== PASSWORD HINTS REMOVED ===== */}
           <div style={{ marginTop: "1rem", textAlign: "center" }}>
             <p
               style={{
@@ -312,17 +326,6 @@ export default function DashboardPage() {
             >
               Authorized Personnel Only
             </p>
-            <p
-              style={{
-                color: "rgba(255,255,255,0.1)",
-                fontSize: "0.6rem",
-                marginTop: "0.25rem",
-              }}
-            >
-              Admin: admin2026 • President: president2026
-              <br />
-              VP: vp2026 • Lecturer: lecturer2026
-            </p>
           </div>
         </div>
       </div>
@@ -330,7 +333,7 @@ export default function DashboardPage() {
   }
 
   // ============================================================
-  // DASHBOARD RENDER - GLASSMORPHISM VERSION
+  // DASHBOARD RENDER
   // ============================================================
   return (
     <div
@@ -385,7 +388,7 @@ export default function DashboardPage() {
           zIndex: 1,
         }}
       >
-        {/* ===== HEADER ===== */}
+        {/* ===== HEADER (GLASS) ===== */}
         <div
           className="dashboard-header glass-card"
           style={{
@@ -538,7 +541,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* ===== SEARCH ===== */}
+        {/* ===== SEARCH (GLASS) ===== */}
         <div
           className="dashboard-search glass-card"
           style={{
@@ -588,7 +591,7 @@ export default function DashboardPage() {
           </div>
         ) : (
           <>
-            {/* ===== CHARTS ===== */}
+            {/* ===== CHARTS (GLASS) ===== */}
             <div className="dashboard-grid-2">
               <div className="dashboard-section glass-card">
                 <h2>🏛️ Department Distribution</h2>
@@ -680,7 +683,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* ===== LEADERBOARDS ===== */}
+            {/* ===== LEADERBOARDS (GLASS) ===== */}
             <div className="dashboard-grid-3">
               <div className="dashboard-section glass-card">
                 <h2>🏆 Top Departments</h2>
@@ -775,7 +778,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* ===== SUGGESTIONS ===== */}
+            {/* ===== SUGGESTIONS (GLASS) ===== */}
             <div className="dashboard-section glass-card">
               <h2>💬 Student Suggestions ({suggestions.length})</h2>
               {suggestions.length > 0 ? (
@@ -833,7 +836,7 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {/* ===== GALLERY ===== */}
+            {/* ===== GALLERY (GLASS) ===== */}
             <div className="dashboard-section glass-card">
               <div
                 style={{
