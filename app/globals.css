@@ -517,12 +517,12 @@ body {
 select.cyber-select {
   background: rgba(255, 255, 255, 0.03) !important;
   border: 1px solid rgba(0, 245, 255, 0.2) !important;
-  color: #ffffff !important;
+  color: #089bab !important;
 }
 
 select.cyber-select option {
-  background: #0a0a0f !important;
-  color: #ffffff !important;
+  background: #024c54 !important;
+  color: #089bab !important;
   padding: 0.5rem !important;
 }
 

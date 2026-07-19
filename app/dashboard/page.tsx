@@ -518,7 +518,7 @@ export default function DashboardPage() {
               borderRadius: "0.75rem",
               background: "rgba(255,255,255,0.03)",
               border: "1px solid rgba(0,245,255,0.2)",
-              color: "#ffffff",
+              color: "#089bab",
               fontSize: "0.875rem",
               minWidth: "150px",
               outline: "none",
@@ -527,7 +527,7 @@ export default function DashboardPage() {
           >
             <option
               value="All"
-              style={{ background: "#0a0a0f", color: "#ffffff" }}
+              style={{ background: "#0065759c", color: "#089bab" }}
             >
               All Departments
             </option>
@@ -535,7 +535,7 @@ export default function DashboardPage() {
               <option
                 key={dept}
                 value={dept}
-                style={{ background: "#0a0a0f", color: "#ffffff" }}
+                style={{ background: "#0a0a0f", color: "#089bab" }}
               >
                 {dept}
               </option>
