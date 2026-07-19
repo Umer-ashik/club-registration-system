@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import dynamic from "next/dynamic";
 
+// Charts - still need these for the graphs
 const Pie = dynamic(() => import("react-chartjs-2").then((mod) => mod.Pie), {
   ssr: false,
 });
@@ -33,6 +34,9 @@ ChartJS.register(
   Title,
 );
 
+// ============================================================
+// ROLE-BASED LOGIN
+// ============================================================
 const ROLES = {
   ADMIN: "ADMIN",
   PRESIDENT: "PRESIDENT",
@@ -47,6 +51,9 @@ const ROLE_PASSWORDS = {
   lecturer2026: ROLES.LECTURER,
 };
 
+// ============================================================
+// MAIN COMPONENT
+// ============================================================
 export default function DashboardPage() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -102,6 +109,10 @@ export default function DashboardPage() {
       };
     }
   }, [isAuthenticated]);
+
+  // ============================================================
+  // DATA ANALYSIS
+  // ============================================================
 
   const total = students.length;
 
@@ -170,28 +181,58 @@ export default function DashboardPage() {
     (_, i) => colors[(i + 2) % colors.length],
   );
 
+  // ============================================================
+  // LOGIN SCREEN
+  // ============================================================
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[#0a0a0f]">
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      <div className="cyber-page">
+        <div className="cyber-bg-glow">
+          <div className="glow-1"></div>
+          <div className="glow-2"></div>
         </div>
-
-        <div className="bg-[#0f0f1e] rounded-3xl p-6 md:p-8 max-w-sm w-full relative border border-cyan-500/20">
-          <div className="flex justify-center mb-4">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border-2 border-cyan-500/30 flex items-center justify-center backdrop-blur-sm overflow-hidden shadow-[0_0_40px_rgba(0,245,255,0.1)] animate-3d-spin">
+        <div className="cyber-card" style={{ maxWidth: "28rem" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginBottom: "1rem",
+            }}
+          >
+            <div
+              style={{
+                width: "80px",
+                height: "80px",
+                borderRadius: "9999px",
+                background:
+                  "linear-gradient(135deg, rgba(0,245,255,0.2), rgba(180,77,255,0.2))",
+                border: "2px solid rgba(0,245,255,0.3)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                backdropFilter: "blur(4px)",
+                overflow: "hidden",
+                boxShadow: "0 0 40px rgba(0,245,255,0.1)",
+                animation: "spin3D 10s ease-in-out infinite",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.animationDuration = "2s")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.animationDuration = "10s")
+              }
+            >
               <img
                 src="/club-logo.png"
                 alt="Club Logo"
-                className="w-full h-full object-cover rounded-full"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
               />
             </div>
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-center text-white">
+          <h1 className="cyber-heading" style={{ fontSize: "2rem" }}>
             🔐 Secure Access
           </h1>
-          <p className="text-cyan-400/40 text-center text-sm mb-6">
+          <p className="cyber-subtitle" style={{ marginBottom: "1.5rem" }}>
             BCA IT Club Dashboard
           </p>
 
@@ -201,23 +242,44 @@ export default function DashboardPage() {
               placeholder="Enter password..."
               value={passwordInput}
               onChange={(e) => setPasswordInput(e.target.value)}
-              className="w-full p-3 rounded-xl bg-white/5 border border-cyan-500/20 text-white placeholder:text-white/20 focus:border-cyan-400 focus:outline-none"
+              className="cyber-input"
+              style={{ marginBottom: "1rem" }}
               required
             />
-            {error && <p className="text-red-400 text-sm mt-3">{error}</p>}
-            <button
-              type="submit"
-              className="w-full mt-4 py-3 rounded-xl bg-cyan-500/20 border border-cyan-500/30 text-white hover:bg-cyan-500/30 transition"
-            >
+            {error && (
+              <p
+                style={{
+                  color: "#ef4444",
+                  fontSize: "0.875rem",
+                  marginBottom: "0.75rem",
+                }}
+              >
+                {error}
+              </p>
+            )}
+            <button type="submit" className="cyber-btn">
               ⚡ Unlock Dashboard
             </button>
           </form>
 
-          <div className="mt-4 text-center">
-            <p className="text-white/15 text-[10px] uppercase tracking-wider">
+          <div style={{ marginTop: "1rem", textAlign: "center" }}>
+            <p
+              style={{
+                color: "rgba(255,255,255,0.15)",
+                fontSize: "0.6rem",
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+              }}
+            >
               Authorized Personnel Only
             </p>
-            <p className="text-white/10 text-[10px] mt-1">
+            <p
+              style={{
+                color: "rgba(255,255,255,0.1)",
+                fontSize: "0.6rem",
+                marginTop: "0.25rem",
+              }}
+            >
               Admin: admin2026 • President: president2026
               <br />
               VP: vp2026 • Lecturer: lecturer2026
@@ -228,54 +290,117 @@ export default function DashboardPage() {
     );
   }
 
+  // ============================================================
+  // DASHBOARD RENDER
+  // ============================================================
   return (
-    <div className="min-h-screen bg-[#0a0a0f] p-4 md:p-8 relative overflow-hidden">
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
+    <div
+      className="cyber-page"
+      style={{ display: "block", padding: "1rem 2rem" }}
+    >
+      <div className="cyber-bg-glow">
+        <div className="glow-1"></div>
+        <div className="glow-2"></div>
       </div>
 
-      <div className="max-w-7xl mx-auto">
-        {/* ===== HEADER WITH LOGO ON THE RIGHT ===== */}
-        <div className="flex flex-row justify-between items-center gap-4 mb-6">
+      <div
+        className="cyber-card dashboard"
+        style={{ maxWidth: "100%", margin: "0 auto" }}
+      >
+        {/* ===== HEADER: Title on left, small logo on right ===== */}
+        <div className="dashboard-header">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-white">
+            <h1 className="cyber-heading small" style={{ textAlign: "left" }}>
               BCA IT Club
             </h1>
-            <div className="flex items-center gap-3">
-              <p className="text-cyan-400/40 text-xs uppercase tracking-wider">
+            <div
+              style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+            >
+              <p className="cyber-subtitle" style={{ marginBottom: 0 }}>
                 {userRole}
               </p>
-              <span className="w-1 h-1 rounded-full bg-cyan-500/30"></span>
-              <p className="text-cyan-400/30 text-[10px] uppercase tracking-wider">
+              <span
+                style={{
+                  width: "4px",
+                  height: "4px",
+                  borderRadius: "9999px",
+                  background: "rgba(0,245,255,0.3)",
+                }}
+              ></span>
+              <p
+                style={{
+                  color: "rgba(0,245,255,0.3)",
+                  fontSize: "0.6rem",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                }}
+              >
                 Real-time Analytics
               </p>
             </div>
           </div>
 
-          {/* ===== SMALL LOGO - TOP RIGHT ===== */}
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border-2 border-cyan-500/30 flex items-center justify-center backdrop-blur-sm overflow-hidden shadow-[0_0_30px_rgba(0,245,255,0.1)] animate-3d-spin flex-shrink-0">
+          {/* Small Logo - Top Right */}
+          <div
+            style={{
+              width: "48px",
+              height: "48px",
+              borderRadius: "9999px",
+              background:
+                "linear-gradient(135deg, rgba(0,245,255,0.2), rgba(180,77,255,0.2))",
+              border: "2px solid rgba(0,245,255,0.3)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backdropFilter: "blur(4px)",
+              overflow: "hidden",
+              boxShadow: "0 0 30px rgba(0,245,255,0.1)",
+              animation: "spin3D 10s ease-in-out infinite",
+              flexShrink: 0,
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.animationDuration = "2s")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.animationDuration = "10s")
+            }
+          >
             <img
               src="/club-logo.png"
               alt="Club Logo"
-              className="w-full h-full object-cover rounded-full"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           </div>
         </div>
 
-        {/* SEARCH + FILTER */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        {/* ===== STATS ===== */}
+        <div className="dashboard-stats" style={{ marginBottom: "1rem" }}>
+          <div className="stat">
+            <div className="label">Total</div>
+            <div className="value">{total}</div>
+          </div>
+          <button
+            className="dashboard-logout"
+            onClick={() => {
+              setIsAuthenticated(false);
+              setPasswordInput("");
+            }}
+          >
+            ⚡ Logout
+          </button>
+        </div>
+
+        {/* ===== SEARCH ===== */}
+        <div className="dashboard-search">
           <input
             type="text"
             placeholder="Search students..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 p-3 rounded-xl bg-white/5 border border-cyan-500/20 text-white placeholder:text-white/20 focus:border-cyan-400 focus:outline-none"
           />
           <select
             value={filterDepartment}
             onChange={(e) => setFilterDepartment(e.target.value)}
-            className="p-3 rounded-xl bg-white/5 border border-cyan-500/20 text-white focus:border-cyan-400 focus:outline-none min-w-[150px]"
           >
             <option value="All">All Departments</option>
             {deptLabels.map((dept) => (
@@ -287,18 +412,26 @@ export default function DashboardPage() {
         </div>
 
         {loading ? (
-          <div className="bg-white/5 rounded-3xl p-20 text-center">
-            <p className="text-cyan-400/40">Loading data...</p>
+          <div
+            style={{
+              textAlign: "center",
+              padding: "5rem",
+              color: "rgba(0,245,255,0.4)",
+            }}
+          >
+            Loading data...
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-              <div className="bg-white/5 rounded-3xl p-6 border border-cyan-500/10">
-                <h2 className="text-cyan-400/60 text-xs uppercase tracking-wider font-semibold mb-4">
-                  🏛️ Department Distribution
-                </h2>
+            {/* ===== CHARTS ===== */}
+            <div
+              className="dashboard-grid-2"
+              style={{ marginBottom: "1.5rem" }}
+            >
+              <div className="dashboard-section">
+                <h2>🏛️ Department Distribution</h2>
                 {deptLabels.length > 0 ? (
-                  <div className="h-64">
+                  <div style={{ height: "256px" }}>
                     <Pie
                       data={{
                         labels: deptLabels,
@@ -324,18 +457,22 @@ export default function DashboardPage() {
                     />
                   </div>
                 ) : (
-                  <p className="text-white/30 text-sm text-center py-10">
+                  <p
+                    style={{
+                      color: "rgba(255,255,255,0.3)",
+                      textAlign: "center",
+                      padding: "2rem 0",
+                    }}
+                  >
                     No data yet
                   </p>
                 )}
               </div>
 
-              <div className="bg-white/5 rounded-3xl p-6 border border-cyan-500/10">
-                <h2 className="text-cyan-400/60 text-xs uppercase tracking-wider font-semibold mb-4">
-                  🎯 Domain Interests
-                </h2>
+              <div className="dashboard-section">
+                <h2>🎯 Domain Interests</h2>
                 {domainLabels.length > 0 ? (
-                  <div className="h-64">
+                  <div style={{ height: "256px" }}>
                     <Bar
                       data={{
                         labels: domainLabels,
@@ -368,175 +505,239 @@ export default function DashboardPage() {
                     />
                   </div>
                 ) : (
-                  <p className="text-white/30 text-sm text-center py-10">
+                  <p
+                    style={{
+                      color: "rgba(255,255,255,0.3)",
+                      textAlign: "center",
+                      padding: "2rem 0",
+                    }}
+                  >
                     No data yet
                   </p>
                 )}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-              <div className="bg-white/5 rounded-3xl p-6 border border-cyan-500/10">
-                <h2 className="text-cyan-400/60 text-xs uppercase tracking-wider font-semibold mb-4">
-                  🏆 Top Departments
-                </h2>
+            {/* ===== LEADERBOARDS ===== */}
+            <div
+              className="dashboard-grid-3"
+              style={{ marginBottom: "1.5rem" }}
+            >
+              <div className="dashboard-section">
+                <h2>🏆 Top Departments</h2>
                 {deptLeaderboard.length > 0 ? (
-                  <div className="space-y-2">
-                    {deptLeaderboard.map(([dept, count], i) => (
-                      <div
-                        key={dept}
-                        className="flex justify-between items-center p-2 bg-white/5 rounded-xl border border-cyan-500/5 hover:border-cyan-500/20 transition"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span
-                            className={`text-sm font-bold ${i === 0 ? "text-yellow-400" : i === 1 ? "text-gray-400" : i === 2 ? "text-amber-600" : "text-white/40"}`}
-                          >
-                            #{i + 1}
-                          </span>
-                          <span className="text-white/80 text-sm">{dept}</span>
-                        </div>
-                        <span className="text-cyan-400 font-bold text-sm">
-                          {count}
-                        </span>
+                  deptLeaderboard.map(([dept, count], i) => {
+                    const rankClass =
+                      i === 0
+                        ? "gold"
+                        : i === 1
+                          ? "silver"
+                          : i === 2
+                            ? "bronze"
+                            : "normal";
+                    return (
+                      <div key={dept} className="dashboard-leaderboard-item">
+                        <span className={`rank ${rankClass}`}>#{i + 1}</span>
+                        <span className="name">{dept}</span>
+                        <span className="count">{count}</span>
                       </div>
-                    ))}
-                  </div>
+                    );
+                  })
                 ) : (
-                  <p className="text-white/30 text-sm text-center py-10">
+                  <p
+                    style={{
+                      color: "rgba(255,255,255,0.3)",
+                      textAlign: "center",
+                      padding: "1rem 0",
+                    }}
+                  >
                     No data yet
                   </p>
                 )}
               </div>
 
-              <div className="bg-white/5 rounded-3xl p-6 border border-cyan-500/10">
-                <h2 className="text-cyan-400/60 text-xs uppercase tracking-wider font-semibold mb-4">
-                  🚀 Top Interests
-                </h2>
+              <div className="dashboard-section">
+                <h2>🚀 Top Interests</h2>
                 {domainLeaderboard.length > 0 ? (
-                  <div className="space-y-2">
-                    {domainLeaderboard.map(([domain, count], i) => (
-                      <div
-                        key={domain}
-                        className="flex justify-between items-center p-2 bg-white/5 rounded-xl border border-cyan-500/5 hover:border-cyan-500/20 transition"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span
-                            className={`text-sm font-bold ${i === 0 ? "text-yellow-400" : i === 1 ? "text-gray-400" : i === 2 ? "text-amber-600" : "text-white/40"}`}
-                          >
-                            #{i + 1}
-                          </span>
-                          <span className="text-white/80 text-sm">
-                            {domain}
-                          </span>
-                        </div>
-                        <span className="text-purple-400 font-bold text-sm">
-                          {count}
-                        </span>
+                  domainLeaderboard.map(([domain, count], i) => {
+                    const rankClass =
+                      i === 0
+                        ? "gold"
+                        : i === 1
+                          ? "silver"
+                          : i === 2
+                            ? "bronze"
+                            : "normal";
+                    return (
+                      <div key={domain} className="dashboard-leaderboard-item">
+                        <span className={`rank ${rankClass}`}>#{i + 1}</span>
+                        <span className="name">{domain}</span>
+                        <span className="count">{count}</span>
                       </div>
-                    ))}
-                  </div>
+                    );
+                  })
                 ) : (
-                  <p className="text-white/30 text-sm text-center py-10">
+                  <p
+                    style={{
+                      color: "rgba(255,255,255,0.3)",
+                      textAlign: "center",
+                      padding: "1rem 0",
+                    }}
+                  >
                     No data yet
                   </p>
                 )}
               </div>
 
-              <div className="bg-white/5 rounded-3xl p-6 border border-cyan-500/10">
-                <h2 className="text-cyan-400/60 text-xs uppercase tracking-wider font-semibold mb-4">
-                  📚 Semester Distribution
-                </h2>
+              <div className="dashboard-section">
+                <h2>📚 Semester Distribution</h2>
                 {semesterLabels.length > 0 ? (
-                  <div className="space-y-2">
-                    {semesterLabels.map((sem) => (
-                      <div
-                        key={sem}
-                        className="flex justify-between items-center p-2 bg-white/5 rounded-xl border border-cyan-500/5"
-                      >
-                        <span className="text-white/80 text-sm">
-                          Semester {sem}
-                        </span>
-                        <span className="text-cyan-400 font-bold text-sm">
-                          {semesterMap[sem]}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                  semesterLabels.map((sem) => (
+                    <div key={sem} className="dashboard-leaderboard-item">
+                      <span className="name">Semester {sem}</span>
+                      <span className="count">{semesterMap[sem]}</span>
+                    </div>
+                  ))
                 ) : (
-                  <p className="text-white/30 text-sm text-center py-10">
+                  <p
+                    style={{
+                      color: "rgba(255,255,255,0.3)",
+                      textAlign: "center",
+                      padding: "1rem 0",
+                    }}
+                  >
                     No data yet
                   </p>
                 )}
               </div>
             </div>
 
-            <div className="bg-white/5 rounded-3xl p-6 border border-cyan-500/10 mb-6">
-              <h2 className="text-cyan-400/60 text-xs uppercase tracking-wider font-semibold mb-4">
-                💬 Student Suggestions ({suggestions.length})
-              </h2>
+            {/* ===== SUGGESTIONS ===== */}
+            <div
+              className="dashboard-section"
+              style={{ marginBottom: "1.5rem" }}
+            >
+              <h2>💬 Student Suggestions ({suggestions.length})</h2>
               {suggestions.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-48 overflow-y-auto p-1">
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      "repeat(auto-fill, minmax(200px, 1fr))",
+                    gap: "0.75rem",
+                    maxHeight: "192px",
+                    overflowY: "auto",
+                  }}
+                >
                   {suggestions.map((s, i) => (
                     <div
                       key={i}
-                      className="bg-white/5 border border-cyan-500/5 rounded-xl p-3 hover:border-cyan-500/20 transition"
+                      style={{
+                        background: "rgba(255,255,255,0.03)",
+                        border: "1px solid rgba(0,245,255,0.05)",
+                        borderRadius: "0.75rem",
+                        padding: "0.75rem",
+                      }}
                     >
-                      <p className="text-white/60 text-sm">"{s.text}"</p>
-                      <p className="text-cyan-400/30 text-xs mt-1">
+                      <p
+                        style={{
+                          color: "rgba(255,255,255,0.6)",
+                          fontSize: "0.875rem",
+                        }}
+                      >
+                        "{s.text}"
+                      </p>
+                      <p
+                        style={{
+                          color: "rgba(0,245,255,0.3)",
+                          fontSize: "0.75rem",
+                          marginTop: "0.25rem",
+                        }}
+                      >
                         — {s.name} ({s.department})
                       </p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-white/30 text-sm text-center py-6">
+                <p
+                  style={{
+                    color: "rgba(255,255,255,0.3)",
+                    textAlign: "center",
+                    padding: "1rem 0",
+                  }}
+                >
                   No suggestions yet
                 </p>
               )}
             </div>
 
-            <div className="bg-white/5 rounded-3xl p-6 border border-cyan-500/10">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-cyan-400/60 text-xs uppercase tracking-wider font-semibold">
-                  🖼️ Student Gallery ({filteredStudents.length})
-                </h2>
-                <p className="text-white/20 text-xs">Click photo to view</p>
+            {/* ===== GALLERY ===== */}
+            <div className="dashboard-section">
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "1rem",
+                }}
+              >
+                <h2>🖼️ Student Gallery ({filteredStudents.length})</h2>
+                <p
+                  style={{
+                    color: "rgba(255,255,255,0.2)",
+                    fontSize: "0.75rem",
+                  }}
+                >
+                  Click photo to view
+                </p>
               </div>
               {filteredStudents.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <div className="dashboard-gallery">
                   {filteredStudents.map((s, i) => (
-                    <div
-                      key={i}
-                      className="bg-white/5 border border-cyan-500/5 rounded-xl overflow-hidden hover:border-cyan-500/20 hover:scale-[1.02] transition-all duration-300 group"
-                    >
+                    <div key={i} className="dashboard-gallery-item">
                       {s.photo_url ? (
-                        <img
-                          src={s.photo_url}
-                          alt={s.name}
-                          className="w-full h-40 object-cover group-hover:brightness-110 transition"
-                          loading="lazy"
-                        />
+                        <img src={s.photo_url} alt={s.name} loading="lazy" />
                       ) : (
-                        <div className="w-full h-40 bg-white/5 flex items-center justify-center text-white/20 text-4xl">
+                        <div
+                          style={{
+                            width: "100%",
+                            height: "160px",
+                            background: "rgba(255,255,255,0.03)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "2.5rem",
+                            color: "rgba(255,255,255,0.2)",
+                          }}
+                        >
                           🎓
                         </div>
                       )}
-                      <div className="p-3">
-                        <p className="text-white/80 text-sm font-semibold truncate">
-                          {s.name}
-                        </p>
-                        <p className="text-cyan-400/40 text-xs truncate">
-                          {s.department}
-                        </p>
-                        <p className="text-white/20 text-[10px] mt-1">
+                      <div className="info">
+                        <div className="name">{s.name}</div>
+                        <div className="dept">{s.department}</div>
+                        <div
+                          style={{
+                            color: "rgba(255,255,255,0.2)",
+                            fontSize: "0.6rem",
+                            marginTop: "0.25rem",
+                          }}
+                        >
                           Sem {s.semester}
-                        </p>
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-white/30 text-sm text-center py-10">
+                <p
+                  style={{
+                    color: "rgba(255,255,255,0.3)",
+                    textAlign: "center",
+                    padding: "2rem 0",
+                  }}
+                >
                   No students match your search
                 </p>
               )}
