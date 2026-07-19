@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import dynamic from "next/dynamic";
 
-// Load charts only on browser (no SSR)
 const Pie = dynamic(() => import("react-chartjs-2").then((mod) => mod.Pie), {
   ssr: false,
 });
@@ -34,9 +33,6 @@ ChartJS.register(
   Title,
 );
 
-// ============================================================
-// ROLE-BASED LOGIN
-// ============================================================
 const ROLES = {
   ADMIN: "ADMIN",
   PRESIDENT: "PRESIDENT",
@@ -51,9 +47,6 @@ const ROLE_PASSWORDS = {
   lecturer2026: ROLES.LECTURER,
 };
 
-// ============================================================
-// MAIN COMPONENT
-// ============================================================
 export default function DashboardPage() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -64,7 +57,6 @@ export default function DashboardPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDepartment, setFilterDepartment] = useState("All");
 
-  // --- LOGIN ---
   const handleLogin = (e) => {
     e.preventDefault();
     const role = ROLE_PASSWORDS[passwordInput];
@@ -77,7 +69,6 @@ export default function DashboardPage() {
     }
   };
 
-  // --- FETCH STUDENTS ---
   const fetchStudents = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -93,11 +84,9 @@ export default function DashboardPage() {
     setLoading(false);
   };
 
-  // --- REAL-TIME ---
   useEffect(() => {
     if (isAuthenticated) {
       fetchStudents();
-
       const channel = supabase
         .channel("students-changes")
         .on(
@@ -108,20 +97,14 @@ export default function DashboardPage() {
           },
         )
         .subscribe();
-
       return () => {
         supabase.removeChannel(channel);
       };
     }
   }, [isAuthenticated]);
 
-  // ============================================================
-  // DATA ANALYSIS
-  // ============================================================
-
   const total = students.length;
 
-  // 1. Department Distribution
   const deptMap = {};
   students.forEach((s) => {
     deptMap[s.department] = (deptMap[s.department] || 0) + 1;
@@ -129,12 +112,10 @@ export default function DashboardPage() {
   const deptLabels = Object.keys(deptMap);
   const deptData = Object.values(deptMap);
 
-  // 2. Department Leaderboard (Top 5)
   const deptLeaderboard = Object.entries(deptMap)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5);
 
-  // 3. Domain Interest Distribution
   const domainMap = {};
   students.forEach((s) => {
     if (s.domain_interest && Array.isArray(s.domain_interest)) {
@@ -146,19 +127,16 @@ export default function DashboardPage() {
   const domainLabels = Object.keys(domainMap);
   const domainData = Object.values(domainMap);
 
-  // 4. Domain Leaderboard (Top 5)
   const domainLeaderboard = Object.entries(domainMap)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5);
 
-  // 5. Semester Distribution
   const semesterMap = {};
   students.forEach((s) => {
     semesterMap[s.semester] = (semesterMap[s.semester] || 0) + 1;
   });
   const semesterLabels = Object.keys(semesterMap).sort((a, b) => a - b);
 
-  // 6. Suggestions
   const suggestions = students
     .filter((s) => s.suggestions && s.suggestions.trim())
     .map((s) => ({
@@ -167,7 +145,6 @@ export default function DashboardPage() {
       department: s.department,
     }));
 
-  // 7. Filtered students
   const filteredStudents = students.filter((s) => {
     const matchesSearch =
       s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -178,7 +155,6 @@ export default function DashboardPage() {
     return matchesSearch && matchesDepartment;
   });
 
-  // 8. Chart Colors (Neon theme)
   const colors = [
     "#00f5ff",
     "#b44dff",
@@ -194,9 +170,6 @@ export default function DashboardPage() {
     (_, i) => colors[(i + 2) % colors.length],
   );
 
-  // ============================================================
-  // LOGIN SCREEN (Cyber)
-  // ============================================================
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[#0a0a0f]">
@@ -255,61 +228,38 @@ export default function DashboardPage() {
     );
   }
 
-  // ============================================================
-  // DASHBOARD (Cyber Theme)
-  // ============================================================
   return (
     <div className="min-h-screen bg-[#0a0a0f] p-4 md:p-8 relative overflow-hidden">
-      {/* Animated Background */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
       </div>
 
       <div className="max-w-7xl mx-auto">
-        {/* HEADER */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-          <div className="flex items-center gap-4">
-            {/* ====== UPDATED LOGO WITH YOUR CLUB LOGO ====== */}
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border-2 border-cyan-500/30 flex items-center justify-center backdrop-blur-sm overflow-hidden shadow-[0_0_30px_rgba(0,245,255,0.1)] animate-3d-spin">
-              <img
-                src="/club-logo.png"
-                alt="Club Logo"
-                className="w-full h-full object-cover rounded-full"
-              />
-            </div>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-white">
-                BCA IT Club
-              </h1>
-              <div className="flex items-center gap-3">
-                <p className="text-cyan-400/40 text-xs uppercase tracking-wider">
-                  {userRole}
-                </p>
-                <span className="w-1 h-1 rounded-full bg-cyan-500/30"></span>
-                <p className="text-cyan-400/30 text-[10px] uppercase tracking-wider">
-                  Real-time Analytics
-                </p>
-              </div>
+        {/* ===== HEADER WITH LOGO ON THE RIGHT ===== */}
+        <div className="flex flex-row justify-between items-center gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-white">
+              BCA IT Club
+            </h1>
+            <div className="flex items-center gap-3">
+              <p className="text-cyan-400/40 text-xs uppercase tracking-wider">
+                {userRole}
+              </p>
+              <span className="w-1 h-1 rounded-full bg-cyan-500/30"></span>
+              <p className="text-cyan-400/30 text-[10px] uppercase tracking-wider">
+                Real-time Analytics
+              </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="bg-white/5 px-4 py-2 rounded-2xl border border-cyan-500/10">
-              <p className="text-cyan-400/30 text-[10px] uppercase tracking-wider">
-                Total
-              </p>
-              <p className="text-xl font-bold text-white">{total}</p>
-            </div>
-            <button
-              onClick={() => {
-                setIsAuthenticated(false);
-                setPasswordInput("");
-              }}
-              className="text-cyan-400/30 hover:text-cyan-400/60 text-xs transition px-3 py-2 border border-cyan-500/10 rounded-xl hover:border-cyan-500/30"
-            >
-              ⚡ Logout
-            </button>
+          {/* ===== SMALL LOGO - TOP RIGHT ===== */}
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border-2 border-cyan-500/30 flex items-center justify-center backdrop-blur-sm overflow-hidden shadow-[0_0_30px_rgba(0,245,255,0.1)] animate-3d-spin flex-shrink-0">
+            <img
+              src="/club-logo.png"
+              alt="Club Logo"
+              className="w-full h-full object-cover rounded-full"
+            />
           </div>
         </div>
 
@@ -342,9 +292,7 @@ export default function DashboardPage() {
           </div>
         ) : (
           <>
-            {/* CHARTS ROW */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-              {/* Department Pie Chart */}
               <div className="bg-white/5 rounded-3xl p-6 border border-cyan-500/10">
                 <h2 className="text-cyan-400/60 text-xs uppercase tracking-wider font-semibold mb-4">
                   🏛️ Department Distribution
@@ -382,7 +330,6 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              {/* Domain Bar Chart */}
               <div className="bg-white/5 rounded-3xl p-6 border border-cyan-500/10">
                 <h2 className="text-cyan-400/60 text-xs uppercase tracking-wider font-semibold mb-4">
                   🎯 Domain Interests
@@ -428,9 +375,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* LEADERBOARDS ROW */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-              {/* Department Leaderboard */}
               <div className="bg-white/5 rounded-3xl p-6 border border-cyan-500/10">
                 <h2 className="text-cyan-400/60 text-xs uppercase tracking-wider font-semibold mb-4">
                   🏆 Top Departments
@@ -463,7 +408,6 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              {/* Domain Leaderboard */}
               <div className="bg-white/5 rounded-3xl p-6 border border-cyan-500/10">
                 <h2 className="text-cyan-400/60 text-xs uppercase tracking-wider font-semibold mb-4">
                   🚀 Top Interests
@@ -498,7 +442,6 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              {/* Semester Distribution */}
               <div className="bg-white/5 rounded-3xl p-6 border border-cyan-500/10">
                 <h2 className="text-cyan-400/60 text-xs uppercase tracking-wider font-semibold mb-4">
                   📚 Semester Distribution
@@ -527,7 +470,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* SUGGESTIONS */}
             <div className="bg-white/5 rounded-3xl p-6 border border-cyan-500/10 mb-6">
               <h2 className="text-cyan-400/60 text-xs uppercase tracking-wider font-semibold mb-4">
                 💬 Student Suggestions ({suggestions.length})
@@ -553,7 +495,6 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {/* STUDENT GALLERY */}
             <div className="bg-white/5 rounded-3xl p-6 border border-cyan-500/10">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-cyan-400/60 text-xs uppercase tracking-wider font-semibold">
