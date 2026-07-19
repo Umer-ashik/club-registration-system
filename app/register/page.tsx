@@ -153,7 +153,7 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        <h1 className="cyber-heading">⚡ Join DELITECH IT Club</h1>
+        <h1 className="cyber-heading">⚡ Join DELITECH  IT Club</h1>
         <p className="cyber-subtitle" style={{ marginBottom: "1.5rem" }}>
           CHANGE IS CONSTANT,DELITECH KEEPS YOU AHEAD
         </p>
