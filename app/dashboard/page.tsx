@@ -1,7 +1,7 @@
 // @ts-nocheck
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import dynamic from "next/dynamic";
 
@@ -66,7 +66,6 @@ export default function DashboardPage() {
   const [lastUpdate, setLastUpdate] = useState(new Date());
 
   const isMounted = useRef(true);
-  const channelRef = useRef(null);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -81,7 +80,7 @@ export default function DashboardPage() {
   };
 
   // ============================================================
-  // FETCH STUDENTS (only called when needed)
+  // FETCH STUDENTS (useCallback to avoid stale closures)
   // ============================================================
   const fetchStudents = useCallback(async () => {
     if (!isMounted.current) return;
@@ -113,7 +112,7 @@ export default function DashboardPage() {
   }, [students.length]);
 
   // ============================================================
-  // EFFECT 1: INITIAL LOAD
+  // INITIAL LOAD
   // ============================================================
   useEffect(() => {
     if (isAuthenticated) {
@@ -122,19 +121,15 @@ export default function DashboardPage() {
   }, [isAuthenticated, fetchStudents]);
 
   // ============================================================
-  // EFFECT 2: REAL-TIME SUBSCRIPTION (ONLY EVENT-DRIVEN)
+  // REAL-TIME SUBSCRIPTION (MINIMAL & GUARANTEED)
   // ============================================================
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    // Clean up previous channel
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
-    }
+    console.log("🔌 Setting up real-time subscription...");
 
     const channel = supabase
-      .channel("students-changes-live")
+      .channel("students-changes")
       .on(
         "postgres_changes",
         {
@@ -147,7 +142,7 @@ export default function DashboardPage() {
             "🆕 New student registered:",
             payload.new?.name || "Unknown",
           );
-          // 🔥 Only refresh when a new student registers
+          // Refresh data immediately
           fetchStudents();
         },
       )
@@ -176,35 +171,15 @@ export default function DashboardPage() {
         },
       )
       .subscribe((status) => {
-        console.log(`📡 WebSocket status: ${status}`);
+        console.log("📡 Realtime status:", status);
         if (status === "SUBSCRIBED") {
-          console.log("✅ Listening for changes...");
-        } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-          console.warn("⚠️ WebSocket issue, attempting reconnection...");
-          // Auto-reconnect after a short delay
-          setTimeout(() => {
-            if (isMounted.current && isAuthenticated) {
-              // Recreate channel
-              if (channelRef.current) {
-                supabase.removeChannel(channelRef.current);
-                channelRef.current = null;
-              }
-              // Re-run this effect logic would be tricky; we'll just re-subscribe
-              // by triggering a re-run of the effect via a key change.
-              // But for simplicity, we rely on the next connection.
-            }
-          }, 3000);
+          console.log("✅ Listening for changes on 'students' table");
         }
       });
 
-    channelRef.current = channel;
-
     return () => {
-      if (channelRef.current) {
-        console.log("🔌 Cleaning up real-time subscription...");
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
+      console.log("🔌 Cleaning up real-time subscription");
+      supabase.removeChannel(channel);
     };
   }, [isAuthenticated, fetchStudents]);
 
@@ -496,7 +471,7 @@ export default function DashboardPage() {
               >
                 Real-time Analytics
               </span>
-              {/* Live indicator - shows when syncing */}
+              {/* Live indicator */}
               <span
                 style={{
                   display: "inline-block",
