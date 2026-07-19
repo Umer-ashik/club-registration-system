@@ -1,7 +1,7 @@
 // @ts-nocheck
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import dynamic from "next/dynamic";
 
@@ -33,9 +33,6 @@ ChartJS.register(
   Title,
 );
 
-// ============================================================
-// ROLE-BASED LOGIN
-// ============================================================
 const ROLES = {
   ADMIN: "ADMIN",
   PRESIDENT: "PRESIDENT",
@@ -50,9 +47,6 @@ const ROLE_PASSWORDS = {
   lecturer2026: ROLES.LECTURER,
 };
 
-// ============================================================
-// MAIN COMPONENT
-// ============================================================
 export default function DashboardPage() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -65,22 +59,15 @@ export default function DashboardPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(new Date());
 
+  // ============================================================
+  // REFS FOR STABLE FUNCTION HANDLING
+  // ============================================================
   const isMounted = useRef(true);
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    const role = ROLE_PASSWORDS[passwordInput];
-    if (role) {
-      setIsAuthenticated(true);
-      setUserRole(role);
-      setError("");
-    } else {
-      setError("❌ hey get out man. Access denied.");
-    }
-  };
+  const fetchRef = useRef(null); // Will hold the current fetch function
+  const channelRef = useRef(null);
 
   // ============================================================
-  // FETCH STUDENTS (useCallback to avoid stale closures)
+  // FETCH STUDENTS (stable reference)
   // ============================================================
   const fetchStudents = useCallback(async () => {
     if (!isMounted.current) return;
@@ -109,7 +96,12 @@ export default function DashboardPage() {
       setLoading(false);
       setIsRefreshing(false);
     }
-  }, [students.length]);
+  }, []); // ⬅️ EMPTY DEPENDENCIES – STABLE!
+
+  // Update the ref whenever fetchStudents changes (but it never does)
+  useEffect(() => {
+    fetchRef.current = fetchStudents;
+  }, [fetchStudents]);
 
   // ============================================================
   // INITIAL LOAD
@@ -121,67 +113,54 @@ export default function DashboardPage() {
   }, [isAuthenticated, fetchStudents]);
 
   // ============================================================
-  // REAL-TIME SUBSCRIPTION (MINIMAL & GUARANTEED)
+  // REAL-TIME SUBSCRIPTION – RUNS ONCE
   // ============================================================
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    console.log("🔌 Setting up real-time subscription...");
+    console.log("🔌 Setting up real-time subscription (stable)...");
 
     const channel = supabase
-      .channel("students-changes")
+      .channel("students-changes-stable")
       .on(
         "postgres_changes",
         {
-          event: "INSERT",
+          event: "*", // Listen to ALL events
           schema: "public",
           table: "students",
         },
         (payload) => {
-          console.log(
-            "🆕 New student registered:",
-            payload.new?.name || "Unknown",
-          );
-          // Refresh data immediately
-          fetchStudents();
-        },
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "students",
-        },
-        (payload) => {
-          console.log("✏️ Student updated:", payload.new?.name || "Unknown");
-          fetchStudents();
-        },
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "DELETE",
-          schema: "public",
-          table: "students",
-        },
-        () => {
-          console.log("🗑️ Student deleted");
-          fetchStudents();
+          console.log("🔥 EVENT RECEIVED:", payload);
+          // Use the latest fetch function from the ref
+          if (fetchRef.current) {
+            fetchRef.current();
+          }
         },
       )
       .subscribe((status) => {
         console.log("📡 Realtime status:", status);
         if (status === "SUBSCRIBED") {
-          console.log("✅ Listening for changes on 'students' table");
+          console.log("✅ ✅ ✅ SUBSCRIBED – waiting for events...");
         }
       });
 
+    channelRef.current = channel;
+
     return () => {
-      console.log("🔌 Cleaning up real-time subscription");
-      supabase.removeChannel(channel);
+      console.log("🔌 Cleaning up subscription");
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
     };
-  }, [isAuthenticated, fetchStudents]);
+  }, [isAuthenticated]); // ⬅️ ONLY DEPENDS ON AUTH
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   // ============================================================
   // DATA ANALYSIS
@@ -376,7 +355,6 @@ export default function DashboardPage() {
         overflow: "hidden",
       }}
     >
-      {/* Background Glow */}
       <div
         style={{
           position: "absolute",
@@ -411,7 +389,6 @@ export default function DashboardPage() {
         ></div>
       </div>
 
-      {/* Main Container */}
       <div
         style={{
           maxWidth: "1200px",
@@ -420,7 +397,6 @@ export default function DashboardPage() {
           zIndex: 1,
         }}
       >
-        {/* ===== HEADER ===== */}
         <div
           style={{
             display: "flex",
@@ -471,7 +447,6 @@ export default function DashboardPage() {
               >
                 Real-time Analytics
               </span>
-              {/* Live indicator */}
               <span
                 style={{
                   display: "inline-block",
@@ -537,7 +512,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Small Logo - Top Right */}
             <div
               style={{
                 width: "48px",
@@ -610,7 +584,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* ===== SEARCH ===== */}
         <div
           style={{
             display: "flex",
@@ -681,7 +654,6 @@ export default function DashboardPage() {
           </div>
         ) : (
           <>
-            {/* ===== CHARTS ===== */}
             <div
               style={{
                 display: "grid",
@@ -814,7 +786,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* ===== LEADERBOARDS ===== */}
             <div
               style={{
                 display: "grid",
@@ -1054,7 +1025,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* ===== SUGGESTIONS ===== */}
             <div
               style={{
                 background: "rgba(255,255,255,0.03)",
@@ -1129,7 +1099,6 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {/* ===== GALLERY ===== */}
             <div
               style={{
                 background: "rgba(255,255,255,0.03)",
