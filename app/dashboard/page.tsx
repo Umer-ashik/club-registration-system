@@ -62,6 +62,8 @@ export default function DashboardPage() {
   const [userRole, setUserRole] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDepartment, setFilterDepartment] = useState("All");
+  // Add a refresh trigger state
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -90,24 +92,64 @@ export default function DashboardPage() {
     setLoading(false);
   };
 
+  // ============================================================
+  // REAL-TIME SUBSCRIPTION - FIXED
+  // ============================================================
   useEffect(() => {
     if (isAuthenticated) {
+      // Initial fetch
       fetchStudents();
+
+      // Set up real-time subscription
       const channel = supabase
         .channel("students-changes")
         .on(
           "postgres_changes",
-          { event: "INSERT", schema: "public", table: "students" },
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "students",
+          },
           () => {
+            console.log("🔄 New student registered! Refreshing data...");
+            // Re-fetch data without reloading the page
             fetchStudents();
           },
         )
-        .subscribe();
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "students",
+          },
+          () => {
+            console.log("🔄 Student data updated! Refreshing...");
+            fetchStudents();
+          },
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "DELETE",
+            schema: "public",
+            table: "students",
+          },
+          () => {
+            console.log("🔄 Student deleted! Refreshing...");
+            fetchStudents();
+          },
+        )
+        .subscribe((status) => {
+          console.log("📡 Realtime connection status:", status);
+        });
+
+      // Cleanup on unmount
       return () => {
         supabase.removeChannel(channel);
       };
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, refreshTrigger]); // Added refreshTrigger to dependency
 
   // ============================================================
   // DATA ANALYSIS
@@ -232,7 +274,7 @@ export default function DashboardPage() {
             🔐 Secure Access
           </h1>
           <p className="cyber-subtitle" style={{ marginBottom: "1.5rem" }}>
-            BCA IT Club Dashboard
+            DELITECH IT CLUB Dashboard
           </p>
 
           <form onSubmit={handleLogin}>
@@ -290,7 +332,7 @@ export default function DashboardPage() {
   }
 
   // ============================================================
-  // DASHBOARD RENDER - SIMPLIFIED CLEAN LAYOUT
+  // DASHBOARD RENDER
   // ============================================================
   return (
     <div
@@ -358,18 +400,9 @@ export default function DashboardPage() {
           }}
         >
           <div>
-            <h1
-              style={{
-                fontSize: "2rem",
-                fontWeight: 700,
-                color: "0 0 50px rgba(0,245,255,0.4)",
-              }}
-            >
+            <h1 style={{ fontSize: "2rem", fontWeight: 700, color: "#ffffff" }}>
               DELITECH.IT.CLUB
             </h1>
-            <p
-              style={{ color: "rgba(95, 0, 212, 0.3)", fontSize: "0.8rem" }}
-            ></p>
             <div
               style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
             >
@@ -401,6 +434,18 @@ export default function DashboardPage() {
               >
                 Real-time Analytics
               </span>
+              {/* Live indicator */}
+              <span
+                style={{
+                  display: "inline-block",
+                  width: "8px",
+                  height: "8px",
+                  borderRadius: "9999px",
+                  background: "#00f5ff",
+                  animation: "pulse 2s ease-in-out infinite",
+                  marginLeft: "0.5rem",
+                }}
+              ></span>
             </div>
           </div>
 
@@ -464,6 +509,25 @@ export default function DashboardPage() {
               />
             </div>
 
+            {/* Manual refresh button (optional fallback) */}
+            <button
+              onClick={() => {
+                setRefreshTrigger((prev) => prev + 1);
+              }}
+              style={{
+                color: "rgba(0,245,255,0.4)",
+                fontSize: "0.65rem",
+                padding: "0.5rem 0.75rem",
+                border: "1px solid rgba(0,245,255,0.1)",
+                borderRadius: "0.75rem",
+                background: "transparent",
+                cursor: "pointer",
+              }}
+              title="Manual Refresh"
+            >
+              🔄
+            </button>
+
             <button
               onClick={() => {
                 setIsAuthenticated(false);
@@ -518,7 +582,7 @@ export default function DashboardPage() {
               borderRadius: "0.75rem",
               background: "rgba(255,255,255,0.03)",
               border: "1px solid rgba(0,245,255,0.2)",
-              color: "#089bab",
+              color: "#ffffff",
               fontSize: "0.875rem",
               minWidth: "150px",
               outline: "none",
@@ -527,7 +591,7 @@ export default function DashboardPage() {
           >
             <option
               value="All"
-              style={{ background: "#0065759c", color: "#089bab" }}
+              style={{ background: "#0a0a0f", color: "#ffffff" }}
             >
               All Departments
             </option>
@@ -535,13 +599,14 @@ export default function DashboardPage() {
               <option
                 key={dept}
                 value={dept}
-                style={{ background: "#0a0a0f", color: "#089bab" }}
+                style={{ background: "#0a0a0f", color: "#ffffff" }}
               >
                 {dept}
               </option>
             ))}
           </select>
         </div>
+
         {loading ? (
           <div
             style={{
