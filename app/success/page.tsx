@@ -6,6 +6,19 @@ import Link from "next/link";
 export default function SuccessPage() {
   const link = process.env.WHATSAPP_GROUP_LINK || "#";
 
+  // Force external link handling
+  const handleWhatsAppClick = (e) => {
+    if (link && link !== "#") {
+      // Open in new tab directly without Next.js routing interference
+      window.open(link, "_blank", "noopener,noreferrer");
+    } else {
+      e.preventDefault();
+      alert(
+        "⚠️ WhatsApp group link not configured. Please contact the club admin.",
+      );
+    }
+  };
+
   return (
     <div className="cyber-page">
       <div className="cyber-bg-glow">
@@ -14,6 +27,7 @@ export default function SuccessPage() {
       </div>
 
       <div className="cyber-card" style={{ textAlign: "center" }}>
+        {/* Logo - Centered */}
         <div
           style={{
             display: "flex",
@@ -88,18 +102,19 @@ export default function SuccessPage() {
           </p>
         </div>
 
-        <a
-          href={link}
-          target="_blank"
+        {/* ===== FIXED: WhatsApp Button ===== */}
+        <button
+          onClick={handleWhatsAppClick}
           className="cyber-btn"
           style={{
             textAlign: "center",
             display: "block",
             textDecoration: "none",
+            cursor: "pointer",
           }}
         >
           📱 Join WhatsApp Group
-        </a>
+        </button>
 
         <Link
           href="/"
