@@ -358,10 +358,18 @@ export default function DashboardPage() {
           }}
         >
           <div>
-            <h1 style={{ fontSize: "2rem", fontWeight: 700, color: "0 0 50px rgba(0,245,255,0.4)" }}>
+            <h1
+              style={{
+                fontSize: "2rem",
+                fontWeight: 700,
+                color: "0 0 50px rgba(0,245,255,0.4)",
+              }}
+            >
               DELITECH.IT.CLUB
             </h1>
-            <p style={{ color: "rgba(95, 0, 212, 0.3)", fontSize: "0.8rem" }}></p>
+            <p
+              style={{ color: "rgba(95, 0, 212, 0.3)", fontSize: "0.8rem" }}
+            ></p>
             <div
               style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
             >
@@ -499,6 +507,7 @@ export default function DashboardPage() {
               color: "#ffffff",
               fontSize: "0.875rem",
               minWidth: "200px",
+              outline: "none",
             }}
           />
           <select
@@ -512,17 +521,27 @@ export default function DashboardPage() {
               color: "#ffffff",
               fontSize: "0.875rem",
               minWidth: "150px",
+              outline: "none",
+              cursor: "pointer",
             }}
           >
-            <option value="All">All Departments</option>
+            <option
+              value="All"
+              style={{ background: "#0a0a0f", color: "#ffffff" }}
+            >
+              All Departments
+            </option>
             {deptLabels.map((dept) => (
-              <option key={dept} value={dept}>
+              <option
+                key={dept}
+                value={dept}
+                style={{ background: "#0a0a0f", color: "#ffffff" }}
+              >
                 {dept}
               </option>
             ))}
           </select>
         </div>
-
         {loading ? (
           <div
             style={{
