@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import dynamic from "next/dynamic";
 
-// Charts - still need these for the graphs
 const Pie = dynamic(() => import("react-chartjs-2").then((mod) => mod.Pie), {
   ssr: false,
 });
@@ -291,34 +290,90 @@ export default function DashboardPage() {
   }
 
   // ============================================================
-  // DASHBOARD RENDER
+  // DASHBOARD RENDER - SIMPLIFIED CLEAN LAYOUT
   // ============================================================
   return (
     <div
-      className="cyber-page"
-      style={{ display: "block", padding: "1rem 2rem" }}
+      style={{
+        minHeight: "100vh",
+        background: "#0a0a0f",
+        padding: "1.5rem",
+        position: "relative",
+        overflow: "hidden",
+      }}
     >
-      <div className="cyber-bg-glow">
-        <div className="glow-1"></div>
-        <div className="glow-2"></div>
+      {/* Background Glow */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 0,
+          pointerEvents: "none",
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            top: "25%",
+            left: "25%",
+            width: "24rem",
+            height: "24rem",
+            background: "rgba(0,245,255,0.04)",
+            borderRadius: "9999px",
+            filter: "blur(80px)",
+          }}
+        ></div>
+        <div
+          style={{
+            position: "absolute",
+            bottom: "25%",
+            right: "25%",
+            width: "24rem",
+            height: "24rem",
+            background: "rgba(180,77,255,0.04)",
+            borderRadius: "9999px",
+            filter: "blur(80px)",
+          }}
+        ></div>
       </div>
 
+      {/* Main Container */}
       <div
-        className="cyber-card dashboard"
-        style={{ maxWidth: "100%", margin: "0 auto" }}
+        style={{
+          maxWidth: "1200px",
+          margin: "0 auto",
+          position: "relative",
+          zIndex: 1,
+        }}
       >
-        {/* ===== HEADER: Title on left, small logo on right ===== */}
-        <div className="dashboard-header">
+        {/* ===== HEADER ===== */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "1.5rem",
+            flexWrap: "wrap",
+            gap: "1rem",
+          }}
+        >
           <div>
-            <h1 className="cyber-heading small" style={{ textAlign: "left" }}>
+            <h1 style={{ fontSize: "2rem", fontWeight: 700, color: "#ffffff" }}>
               BCA IT Club
             </h1>
             <div
               style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
             >
-              <p className="cyber-subtitle" style={{ marginBottom: 0 }}>
+              <span
+                style={{
+                  color: "rgba(0,245,255,0.4)",
+                  fontSize: "0.7rem",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                }}
+              >
                 {userRole}
-              </p>
+              </span>
               <span
                 style={{
                   width: "4px",
@@ -327,7 +382,7 @@ export default function DashboardPage() {
                   background: "rgba(0,245,255,0.3)",
                 }}
               ></span>
-              <p
+              <span
                 style={{
                   color: "rgba(0,245,255,0.3)",
                   fontSize: "0.6rem",
@@ -336,71 +391,127 @@ export default function DashboardPage() {
                 }}
               >
                 Real-time Analytics
-              </p>
+              </span>
             </div>
           </div>
 
-          {/* Small Logo - Top Right */}
-          <div
-            style={{
-              width: "48px",
-              height: "48px",
-              borderRadius: "9999px",
-              background:
-                "linear-gradient(135deg, rgba(0,245,255,0.2), rgba(180,77,255,0.2))",
-              border: "2px solid rgba(0,245,255,0.3)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              backdropFilter: "blur(4px)",
-              overflow: "hidden",
-              boxShadow: "0 0 30px rgba(0,245,255,0.1)",
-              animation: "spin3D 10s ease-in-out infinite",
-              flexShrink: 0,
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.animationDuration = "2s")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.animationDuration = "10s")
-            }
-          >
-            <img
-              src="/club-logo.png"
-              alt="Club Logo"
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
-          </div>
-        </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+            <div
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                padding: "0.5rem 1rem",
+                borderRadius: "1rem",
+                border: "1px solid rgba(0,245,255,0.1)",
+              }}
+            >
+              <div
+                style={{
+                  color: "rgba(0,245,255,0.3)",
+                  fontSize: "0.6rem",
+                  textTransform: "uppercase",
+                }}
+              >
+                Total
+              </div>
+              <div
+                style={{
+                  fontSize: "1.25rem",
+                  fontWeight: 700,
+                  color: "#ffffff",
+                }}
+              >
+                {total}
+              </div>
+            </div>
 
-        {/* ===== STATS ===== */}
-        <div className="dashboard-stats" style={{ marginBottom: "1rem" }}>
-          <div className="stat">
-            <div className="label">Total</div>
-            <div className="value">{total}</div>
+            {/* Small Logo - Top Right */}
+            <div
+              style={{
+                width: "48px",
+                height: "48px",
+                borderRadius: "9999px",
+                background:
+                  "linear-gradient(135deg, rgba(0,245,255,0.2), rgba(180,77,255,0.2))",
+                border: "2px solid rgba(0,245,255,0.3)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                backdropFilter: "blur(4px)",
+                overflow: "hidden",
+                boxShadow: "0 0 30px rgba(0,245,255,0.1)",
+                animation: "spin3D 10s ease-in-out infinite",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.animationDuration = "2s")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.animationDuration = "10s")
+              }
+            >
+              <img
+                src="/club-logo.png"
+                alt="Logo"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            </div>
+
+            <button
+              onClick={() => {
+                setIsAuthenticated(false);
+                setPasswordInput("");
+              }}
+              style={{
+                color: "rgba(0,245,255,0.3)",
+                fontSize: "0.65rem",
+                padding: "0.5rem 0.75rem",
+                border: "1px solid rgba(0,245,255,0.1)",
+                borderRadius: "0.75rem",
+                background: "transparent",
+                cursor: "pointer",
+              }}
+            >
+              ⚡ Logout
+            </button>
           </div>
-          <button
-            className="dashboard-logout"
-            onClick={() => {
-              setIsAuthenticated(false);
-              setPasswordInput("");
-            }}
-          >
-            ⚡ Logout
-          </button>
         </div>
 
         {/* ===== SEARCH ===== */}
-        <div className="dashboard-search">
+        <div
+          style={{
+            display: "flex",
+            gap: "0.75rem",
+            marginBottom: "1.5rem",
+            flexWrap: "wrap",
+          }}
+        >
           <input
             type="text"
             placeholder="Search students..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              flex: 1,
+              padding: "0.75rem 1rem",
+              borderRadius: "0.75rem",
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(0,245,255,0.2)",
+              color: "#ffffff",
+              fontSize: "0.875rem",
+              minWidth: "200px",
+            }}
           />
           <select
             value={filterDepartment}
             onChange={(e) => setFilterDepartment(e.target.value)}
+            style={{
+              padding: "0.75rem 1rem",
+              borderRadius: "0.75rem",
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(0,245,255,0.2)",
+              color: "#ffffff",
+              fontSize: "0.875rem",
+              minWidth: "150px",
+            }}
           >
             <option value="All">All Departments</option>
             {deptLabels.map((dept) => (
@@ -425,11 +536,32 @@ export default function DashboardPage() {
           <>
             {/* ===== CHARTS ===== */}
             <div
-              className="dashboard-grid-2"
-              style={{ marginBottom: "1.5rem" }}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "1.5rem",
+                marginBottom: "1.5rem",
+              }}
             >
-              <div className="dashboard-section">
-                <h2>🏛️ Department Distribution</h2>
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.03)",
+                  borderRadius: "1.5rem",
+                  padding: "1.5rem",
+                  border: "1px solid rgba(0,245,255,0.08)",
+                }}
+              >
+                <h2
+                  style={{
+                    color: "rgba(0,245,255,0.6)",
+                    fontSize: "0.65rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    marginBottom: "1rem",
+                  }}
+                >
+                  🏛️ Department Distribution
+                </h2>
                 {deptLabels.length > 0 ? (
                   <div style={{ height: "256px" }}>
                     <Pie
@@ -469,8 +601,25 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              <div className="dashboard-section">
-                <h2>🎯 Domain Interests</h2>
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.03)",
+                  borderRadius: "1.5rem",
+                  padding: "1.5rem",
+                  border: "1px solid rgba(0,245,255,0.08)",
+                }}
+              >
+                <h2
+                  style={{
+                    color: "rgba(0,245,255,0.6)",
+                    fontSize: "0.65rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    marginBottom: "1rem",
+                  }}
+                >
+                  🎯 Domain Interests
+                </h2>
                 {domainLabels.length > 0 ? (
                   <div style={{ height: "256px" }}>
                     <Bar
@@ -520,29 +669,82 @@ export default function DashboardPage() {
 
             {/* ===== LEADERBOARDS ===== */}
             <div
-              className="dashboard-grid-3"
-              style={{ marginBottom: "1.5rem" }}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr 1fr",
+                gap: "1.5rem",
+                marginBottom: "1.5rem",
+              }}
             >
-              <div className="dashboard-section">
-                <h2>🏆 Top Departments</h2>
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.03)",
+                  borderRadius: "1.5rem",
+                  padding: "1.5rem",
+                  border: "1px solid rgba(0,245,255,0.08)",
+                }}
+              >
+                <h2
+                  style={{
+                    color: "rgba(0,245,255,0.6)",
+                    fontSize: "0.65rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    marginBottom: "1rem",
+                  }}
+                >
+                  🏆 Top Departments
+                </h2>
                 {deptLeaderboard.length > 0 ? (
-                  deptLeaderboard.map(([dept, count], i) => {
-                    const rankClass =
-                      i === 0
-                        ? "gold"
-                        : i === 1
-                          ? "silver"
-                          : i === 2
-                            ? "bronze"
-                            : "normal";
-                    return (
-                      <div key={dept} className="dashboard-leaderboard-item">
-                        <span className={`rank ${rankClass}`}>#{i + 1}</span>
-                        <span className="name">{dept}</span>
-                        <span className="count">{count}</span>
-                      </div>
-                    );
-                  })
+                  deptLeaderboard.map(([dept, count], i) => (
+                    <div
+                      key={dept}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        padding: "0.5rem",
+                        background: "rgba(255,255,255,0.03)",
+                        borderRadius: "0.75rem",
+                        border: "1px solid rgba(0,245,255,0.05)",
+                        marginBottom: "0.5rem",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontWeight: 700,
+                          fontSize: "0.875rem",
+                          color:
+                            i === 0
+                              ? "#fbbf24"
+                              : i === 1
+                                ? "#9ca3af"
+                                : i === 2
+                                  ? "#d97706"
+                                  : "rgba(255,255,255,0.4)",
+                        }}
+                      >
+                        #{i + 1}
+                      </span>
+                      <span
+                        style={{
+                          color: "rgba(255,255,255,0.8)",
+                          fontSize: "0.875rem",
+                        }}
+                      >
+                        {dept}
+                      </span>
+                      <span
+                        style={{
+                          color: "#00f5ff",
+                          fontWeight: 700,
+                          fontSize: "0.875rem",
+                        }}
+                      >
+                        {count}
+                      </span>
+                    </div>
+                  ))
                 ) : (
                   <p
                     style={{
@@ -556,26 +758,75 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              <div className="dashboard-section">
-                <h2>🚀 Top Interests</h2>
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.03)",
+                  borderRadius: "1.5rem",
+                  padding: "1.5rem",
+                  border: "1px solid rgba(0,245,255,0.08)",
+                }}
+              >
+                <h2
+                  style={{
+                    color: "rgba(0,245,255,0.6)",
+                    fontSize: "0.65rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    marginBottom: "1rem",
+                  }}
+                >
+                  🚀 Top Interests
+                </h2>
                 {domainLeaderboard.length > 0 ? (
-                  domainLeaderboard.map(([domain, count], i) => {
-                    const rankClass =
-                      i === 0
-                        ? "gold"
-                        : i === 1
-                          ? "silver"
-                          : i === 2
-                            ? "bronze"
-                            : "normal";
-                    return (
-                      <div key={domain} className="dashboard-leaderboard-item">
-                        <span className={`rank ${rankClass}`}>#{i + 1}</span>
-                        <span className="name">{domain}</span>
-                        <span className="count">{count}</span>
-                      </div>
-                    );
-                  })
+                  domainLeaderboard.map(([domain, count], i) => (
+                    <div
+                      key={domain}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        padding: "0.5rem",
+                        background: "rgba(255,255,255,0.03)",
+                        borderRadius: "0.75rem",
+                        border: "1px solid rgba(0,245,255,0.05)",
+                        marginBottom: "0.5rem",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontWeight: 700,
+                          fontSize: "0.875rem",
+                          color:
+                            i === 0
+                              ? "#fbbf24"
+                              : i === 1
+                                ? "#9ca3af"
+                                : i === 2
+                                  ? "#d97706"
+                                  : "rgba(255,255,255,0.4)",
+                        }}
+                      >
+                        #{i + 1}
+                      </span>
+                      <span
+                        style={{
+                          color: "rgba(255,255,255,0.8)",
+                          fontSize: "0.875rem",
+                        }}
+                      >
+                        {domain}
+                      </span>
+                      <span
+                        style={{
+                          color: "#b44dff",
+                          fontWeight: 700,
+                          fontSize: "0.875rem",
+                        }}
+                      >
+                        {count}
+                      </span>
+                    </div>
+                  ))
                 ) : (
                   <p
                     style={{
@@ -589,13 +840,57 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              <div className="dashboard-section">
-                <h2>📚 Semester Distribution</h2>
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.03)",
+                  borderRadius: "1.5rem",
+                  padding: "1.5rem",
+                  border: "1px solid rgba(0,245,255,0.08)",
+                }}
+              >
+                <h2
+                  style={{
+                    color: "rgba(0,245,255,0.6)",
+                    fontSize: "0.65rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    marginBottom: "1rem",
+                  }}
+                >
+                  📚 Semester Distribution
+                </h2>
                 {semesterLabels.length > 0 ? (
                   semesterLabels.map((sem) => (
-                    <div key={sem} className="dashboard-leaderboard-item">
-                      <span className="name">Semester {sem}</span>
-                      <span className="count">{semesterMap[sem]}</span>
+                    <div
+                      key={sem}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        padding: "0.5rem",
+                        background: "rgba(255,255,255,0.03)",
+                        borderRadius: "0.75rem",
+                        border: "1px solid rgba(0,245,255,0.05)",
+                        marginBottom: "0.5rem",
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: "rgba(255,255,255,0.8)",
+                          fontSize: "0.875rem",
+                        }}
+                      >
+                        Semester {sem}
+                      </span>
+                      <span
+                        style={{
+                          color: "#00f5ff",
+                          fontWeight: 700,
+                          fontSize: "0.875rem",
+                        }}
+                      >
+                        {semesterMap[sem]}
+                      </span>
                     </div>
                   ))
                 ) : (
@@ -614,10 +909,25 @@ export default function DashboardPage() {
 
             {/* ===== SUGGESTIONS ===== */}
             <div
-              className="dashboard-section"
-              style={{ marginBottom: "1.5rem" }}
+              style={{
+                background: "rgba(255,255,255,0.03)",
+                borderRadius: "1.5rem",
+                padding: "1.5rem",
+                border: "1px solid rgba(0,245,255,0.08)",
+                marginBottom: "1.5rem",
+              }}
             >
-              <h2>💬 Student Suggestions ({suggestions.length})</h2>
+              <h2
+                style={{
+                  color: "rgba(0,245,255,0.6)",
+                  fontSize: "0.65rem",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  marginBottom: "1rem",
+                }}
+              >
+                💬 Student Suggestions ({suggestions.length})
+              </h2>
               {suggestions.length > 0 ? (
                 <div
                   style={{
@@ -673,7 +983,14 @@ export default function DashboardPage() {
             </div>
 
             {/* ===== GALLERY ===== */}
-            <div className="dashboard-section">
+            <div
+              style={{
+                background: "rgba(255,255,255,0.03)",
+                borderRadius: "1.5rem",
+                padding: "1.5rem",
+                border: "1px solid rgba(0,245,255,0.08)",
+              }}
+            >
               <div
                 style={{
                   display: "flex",
@@ -682,22 +999,47 @@ export default function DashboardPage() {
                   marginBottom: "1rem",
                 }}
               >
-                <h2>🖼️ Student Gallery ({filteredStudents.length})</h2>
-                <p
+                <h2
                   style={{
-                    color: "rgba(255,255,255,0.2)",
-                    fontSize: "0.75rem",
+                    color: "rgba(0,245,255,0.6)",
+                    fontSize: "0.65rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
                   }}
                 >
-                  Click photo to view
-                </p>
+                  🖼️ Student Gallery ({filteredStudents.length})
+                </h2>
               </div>
               {filteredStudents.length > 0 ? (
-                <div className="dashboard-gallery">
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      "repeat(auto-fill, minmax(150px, 1fr))",
+                    gap: "1rem",
+                  }}
+                >
                   {filteredStudents.map((s, i) => (
-                    <div key={i} className="dashboard-gallery-item">
+                    <div
+                      key={i}
+                      style={{
+                        background: "rgba(255,255,255,0.03)",
+                        border: "1px solid rgba(0,245,255,0.05)",
+                        borderRadius: "0.75rem",
+                        overflow: "hidden",
+                        transition: "all 0.3s",
+                      }}
+                    >
                       {s.photo_url ? (
-                        <img src={s.photo_url} alt={s.name} loading="lazy" />
+                        <img
+                          src={s.photo_url}
+                          alt={s.name}
+                          style={{
+                            width: "100%",
+                            height: "160px",
+                            objectFit: "cover",
+                          }}
+                        />
                       ) : (
                         <div
                           style={{
@@ -714,9 +1056,27 @@ export default function DashboardPage() {
                           🎓
                         </div>
                       )}
-                      <div className="info">
-                        <div className="name">{s.name}</div>
-                        <div className="dept">{s.department}</div>
+                      <div style={{ padding: "0.75rem" }}>
+                        <div
+                          style={{
+                            color: "rgba(255,255,255,0.8)",
+                            fontWeight: 600,
+                            fontSize: "0.875rem",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {s.name}
+                        </div>
+                        <div
+                          style={{
+                            color: "rgba(0,245,255,0.4)",
+                            fontSize: "0.75rem",
+                          }}
+                        >
+                          {s.department}
+                        </div>
                         <div
                           style={{
                             color: "rgba(255,255,255,0.2)",
