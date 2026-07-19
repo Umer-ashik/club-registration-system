@@ -40,23 +40,39 @@ export default function RegisterPage() {
     e.preventDefault();
     setLoading(true);
 
+    if (!file) {
+      alert("⚠️ Please select a photo.");
+      setLoading(false);
+      return;
+    }
+
     let photo_url = "";
     let photo_path = "";
 
-    if (file) {
+    try {
       const ext = file.name.split(".").pop();
       const path = `public/${Date.now()}.${ext}`;
+
       const { error: uploadError } = await supabase.storage
         .from("student-photos")
         .upload(path, file);
 
-      if (!uploadError) {
-        const { data: urlData } = supabase.storage
-          .from("student-photos")
-          .getPublicUrl(path);
-        photo_url = urlData.publicUrl;
-        photo_path = path;
+      if (uploadError) {
+        alert("❌ Photo upload failed: " + uploadError.message);
+        setLoading(false);
+        return;
       }
+
+      const { data: urlData } = supabase.storage
+        .from("student-photos")
+        .getPublicUrl(path);
+
+      photo_url = urlData.publicUrl;
+      photo_path = path;
+    } catch (err) {
+      alert("❌ Photo upload error: " + err.message);
+      setLoading(false);
+      return;
     }
 
     const payload = {
@@ -71,105 +87,156 @@ export default function RegisterPage() {
       photo_path,
     };
 
-    const res = await fetch("/api/register", {
-      method: "POST",
-      body: JSON.stringify(payload),
-      headers: { "Content-Type": "application/json" },
-    });
+    try {
+      const res = await fetch("/api/register", {
+        method: "POST",
+        body: JSON.stringify(payload),
+        headers: { "Content-Type": "application/json" },
+      });
 
-    if (res.ok) {
-      router.push("/success");
-    } else {
-      const errorText = await res.text();
-      alert("Registration failed: " + errorText);
+      if (res.ok) {
+        router.push("/success");
+      } else {
+        const errorText = await res.text();
+        alert("❌ Registration failed: " + errorText);
+      }
+    } catch (err) {
+      alert("❌ Network error: " + err.message);
     }
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center p-4">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border-t-8 border-[#87CEEB]"
-      >
-        <h1 className="text-3xl font-bold text-center text-[#4A9FD8]">
-          📝 Join IT Club
-        </h1>
-        <p className="text-center text-gray-500 mb-6">BCA Department</p>
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[#0a0a0f]">
+      {/* Animated Background */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      </div>
 
-        <input
-          name="name"
-          placeholder="Full Name"
-          onChange={handleChange}
-          className="w-full p-3 mb-3 border rounded-xl"
-          required
-        />
-        <input
-          name="email"
-          type="email"
-          placeholder="College Email"
-          onChange={handleChange}
-          className="w-full p-3 mb-3 border rounded-xl"
-          required
-        />
-        <input
-          name="phone"
-          placeholder="Phone Number"
-          onChange={handleChange}
-          className="w-full p-3 mb-3 border rounded-xl"
-          required
-        />
-        <input
-          name="department"
-          placeholder="Department (e.g., BCA)"
-          onChange={handleChange}
-          className="w-full p-3 mb-3 border rounded-xl"
-          required
-        />
-        <input
-          name="semester"
-          type="number"
-          placeholder="Semester"
-          onChange={handleChange}
-          className="w-full p-3 mb-3 border rounded-xl"
-          required
-        />
-
-        <p className="font-semibold mt-2">Select Interests:</p>
-        <div className="flex flex-wrap gap-2 mb-3">
-          {["Web Dev", "AI/ML", "Cybersecurity", "Cloud", "App Dev"].map(
-            (d) => (
-              <label
-                key={d}
-                className="flex items-center gap-1 bg-[#F5F0E8] px-3 py-1 rounded-full"
-              >
-                <input type="checkbox" value={d} onChange={handleChange} /> {d}
-              </label>
-            ),
-          )}
+      {/* Cyber Card */}
+      <div className="bg-[#0f0f1e] rounded-3xl p-6 md:p-8 max-w-md w-full border border-cyan-500/20">
+        {/* 3D Logo */}
+        <div className="flex justify-center mb-4">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border-2 border-cyan-500/30 flex items-center justify-center text-4xl backdrop-blur-sm animate-3d-spin">
+            🖥️
+          </div>
         </div>
 
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setFile(e.target.files?.[0] || null)}
-          className="w-full p-2 border rounded-xl mb-3"
-          required
-        />
-        <textarea
-          name="suggestions"
-          placeholder="Suggestions for the club?"
-          onChange={handleChange}
-          className="w-full p-3 border rounded-xl mb-4"
-        ></textarea>
+        <h1 className="text-3xl md:text-4xl font-bold text-center text-white">
+          ⚡ Join IT Club
+        </h1>
+        <p className="text-cyan-400/40 text-center text-sm mb-6">
+          BCA Department
+        </p>
 
-        <button
-          type="submit"
-          className="w-full bg-[#87CEEB] hover:bg-[#4A9FD8] text-white font-bold py-3 rounded-xl transition"
-        >
-          {loading ? "Registering..." : "🚀 Register & Join WhatsApp"}
-        </button>
-      </form>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <input
+            name="name"
+            placeholder="Full Name"
+            onChange={handleChange}
+            className="w-full p-3 rounded-xl bg-white/5 border border-cyan-500/20 text-white placeholder:text-white/20 focus:border-cyan-400 focus:outline-none"
+            required
+          />
+          <input
+            name="email"
+            type="email"
+            placeholder="College Email"
+            onChange={handleChange}
+            className="w-full p-3 rounded-xl bg-white/5 border border-cyan-500/20 text-white placeholder:text-white/20 focus:border-cyan-400 focus:outline-none"
+            required
+          />
+          <input
+            name="phone"
+            placeholder="Phone Number"
+            onChange={handleChange}
+            className="w-full p-3 rounded-xl bg-white/5 border border-cyan-500/20 text-white placeholder:text-white/20 focus:border-cyan-400 focus:outline-none"
+            required
+          />
+          <input
+            name="department"
+            placeholder="Department (e.g., BCA)"
+            onChange={handleChange}
+            className="w-full p-3 rounded-xl bg-white/5 border border-cyan-500/20 text-white placeholder:text-white/20 focus:border-cyan-400 focus:outline-none"
+            required
+          />
+          <input
+            name="semester"
+            type="number"
+            placeholder="Semester"
+            onChange={handleChange}
+            className="w-full p-3 rounded-xl bg-white/5 border border-cyan-500/20 text-white placeholder:text-white/20 focus:border-cyan-400 focus:outline-none"
+            required
+          />
+
+          <p className="text-cyan-400/60 text-xs uppercase tracking-wider font-semibold mt-2">
+            Select Interests
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {["Web Dev", "AI/ML", "Cybersecurity", "Cloud", "App Dev"].map(
+              (d) => (
+                <label
+                  key={d}
+                  className="flex items-center gap-1 bg-white/5 border border-cyan-500/10 px-3 py-1.5 rounded-full text-xs text-white/80 hover:border-cyan-500/30 transition cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    value={d}
+                    onChange={handleChange}
+                    className="accent-cyan-400"
+                  />{" "}
+                  {d}
+                </label>
+              ),
+            )}
+          </div>
+
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setFile(e.target.files?.[0] || null)}
+            className="w-full p-2 rounded-xl bg-white/5 border border-cyan-500/20 text-white/80 text-xs file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-cyan-500/20 file:text-cyan-400 file:text-xs file:font-semibold hover:file:bg-cyan-500/30 transition"
+            required
+          />
+
+          <textarea
+            name="suggestions"
+            placeholder="Suggestions for the club?"
+            onChange={handleChange}
+            className="w-full p-3 rounded-xl bg-white/5 border border-cyan-500/20 text-white placeholder:text-white/20 focus:border-cyan-400 focus:outline-none h-20 resize-none"
+          ></textarea>
+
+          <button
+            type="submit"
+            className="w-full py-3 rounded-xl bg-cyan-500/20 border border-cyan-500/30 text-white hover:bg-cyan-500/30 transition text-sm uppercase tracking-wider font-semibold"
+            disabled={loading}
+          >
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    fill="none"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+                Registering...
+              </span>
+            ) : (
+              "🚀 Register & Join"
+            )}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
