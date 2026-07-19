@@ -153,9 +153,9 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        <h1 className="cyber-heading">⚡ Join IT Club</h1>
+        <h1 className="cyber-heading">⚡ Join DELITECH IT Club</h1>
         <p className="cyber-subtitle" style={{ marginBottom: "1.5rem" }}>
-          BCA Department
+          CHANGE IS CONSTANT,DELITECH KEEPS YOU AHEAD
         </p>
 
         <form
@@ -172,7 +172,7 @@ export default function RegisterPage() {
           <input
             name="email"
             type="email"
-            placeholder="College Email"
+            placeholder="Your Email"
             onChange={handleChange}
             className="cyber-input"
             required
@@ -185,7 +185,7 @@ export default function RegisterPage() {
             required
           />
           <input
-            name="department"
+            name="department that you belongs ?"
             placeholder="Department (e.g., BCA)"
             onChange={handleChange}
             className="cyber-input"
@@ -194,7 +194,7 @@ export default function RegisterPage() {
           <input
             name="semester"
             type="number"
-            placeholder="Semester"
+            placeholder="your current Semester"
             onChange={handleChange}
             className="cyber-input"
             required
@@ -222,7 +222,7 @@ export default function RegisterPage() {
 
           <textarea
             name="suggestions"
-            placeholder="Suggestions for the club?"
+            placeholder="your intention to join this club?"
             onChange={handleChange}
             className="cyber-input textarea"
           />
