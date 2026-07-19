@@ -71,7 +71,7 @@ export default function DashboardPage() {
       setUserRole(role);
       setError("");
     } else {
-      setError("❌ Invalid credentials. Access denied.");
+      setError("❌ hey get out man. Access denied.");
     }
   };
 
@@ -359,8 +359,11 @@ export default function DashboardPage() {
         >
           <div>
             <h1 style={{ fontSize: "2rem", fontWeight: 700, color: "#ffffff" }}>
-              BCA IT Club
+              DELITECH.IT.CLUB
             </h1>
+            <h3 style={{ fontSize: "2rem", fontWeight: 700, color: "#ffffff" }}>
+              CHANGE IS CONSTANT, DELITECH KEEPS YOU AHEAD
+            </h3>
             <div
               style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
             >
