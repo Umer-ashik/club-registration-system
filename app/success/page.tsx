@@ -22,8 +22,12 @@ export default function SuccessPage() {
 
       <div className="cyber-card text-center">
         <div className="flex justify-center mb-4">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border-2 border-cyan-500/30 flex items-center justify-center text-5xl backdrop-blur-sm animate-3d-spin shadow-[0_0_40px_rgba(0,245,255,0.1)]">
-            🎉
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border-2 border-cyan-500/30 flex items-center justify-center backdrop-blur-sm animate-3d-spin shadow-[0_0_40px_rgba(0,245,255,0.1)] overflow-hidden">
+            <img
+              src="/club-logo.png"
+              alt="Club Logo"
+              className="w-full h-full object-cover rounded-full"
+            />
           </div>
         </div>
 
