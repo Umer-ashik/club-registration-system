@@ -4,11 +4,11 @@
 import Link from "next/link";
 
 export default function SuccessPage() {
-  const link = process.env.WHATSAPP_GROUP_LINK || "#";
+  const link = process.env.WHATSAPP_GROUP_LINK || "https://chat.whatsapp.com/I5ZQSfs2mnpD04jdyqMGkC";
 
   // Force external link handling
   const handleWhatsAppClick = (e) => {
-    if (link && link !== "#") {
+    if (link && link !== "https://chat.whatsapp.com/I5ZQSfs2mnpD04jdyqMGkC") {
       // Open in new tab directly without Next.js routing interference
       window.open(link, "_blank", "noopener,noreferrer");
     } else {
