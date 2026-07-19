@@ -1,7 +1,7 @@
 // @ts-nocheck
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import dynamic from "next/dynamic";
 
@@ -62,13 +62,12 @@ export default function DashboardPage() {
   const [userRole, setUserRole] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDepartment, setFilterDepartment] = useState("All");
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [lastSyncTime, setLastSyncTime] = useState(new Date());
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState(new Date());
 
-  // ⭐ KEY FIX: Use a refresh trigger to force re-fetch
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const channelRef = useRef(null);
   const isMounted = useRef(true);
+  const intervalRef = useRef(null);
+  const fetchCounter = useRef(0);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -83,86 +82,89 @@ export default function DashboardPage() {
   };
 
   // ============================================================
-  // FETCH STUDENTS - THE ONLY PLACE DATA IS FETCHED
+  // FETCH STUDENTS - THE ONLY DATA FETCHING FUNCTION
   // ============================================================
-  const fetchStudents = useCallback(
-    async (showSync = true) => {
-      if (!isMounted.current) return;
+  const fetchStudents = async (showRefresh = true) => {
+    if (!isMounted.current) return;
 
-      if (showSync && students.length > 0) {
-        setIsSyncing(true);
-      }
-      if (students.length === 0) {
-        setLoading(true);
-      }
+    fetchCounter.current += 1;
+    const currentFetch = fetchCounter.current;
 
-      try {
-        const { data, error } = await supabase
-          .from("students")
-          .select("*")
-          .order("registered_at", { ascending: false });
-
-        if (error) {
-          console.error("❌ Error fetching students:", error);
-        } else if (isMounted.current) {
-          setStudents(data || []);
-          setLastSyncTime(new Date());
-          console.log(
-            `✅ Fetched ${data?.length || 0} students at ${new Date().toLocaleTimeString()}`,
-          );
-        }
-      } catch (err) {
-        console.error("❌ Fetch error:", err);
-      }
-
-      if (isMounted.current) {
-        setLoading(false);
-        setIsSyncing(false);
-      }
-    },
-    [students.length],
-  );
-
-  // ============================================================
-  // MANUAL REFRESH - USED BY BUTTON AND TRIGGER
-  // ============================================================
-  const manualRefresh = useCallback(() => {
-    console.log("🔄 Manual refresh triggered");
-    setRefreshTrigger((prev) => prev + 1);
-  }, []);
-
-  // ============================================================
-  // EFFECT 1: Watch refreshTrigger and fetch data
-  // ============================================================
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchStudents(true);
+    if (showRefresh && students.length > 0) {
+      setIsRefreshing(true);
     }
-  }, [isAuthenticated, refreshTrigger, fetchStudents]);
+    if (students.length === 0) {
+      setLoading(true);
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("students")
+        .select("*")
+        .order("registered_at", { ascending: false });
+
+      // Only update if this is still the latest fetch
+      if (currentFetch !== fetchCounter.current) return;
+
+      if (error) {
+        console.error("❌ Error fetching students:", error);
+      } else if (isMounted.current) {
+        setStudents(data || []);
+        setLastUpdate(new Date());
+        console.log(`✅ Fetched ${data?.length || 0} students`);
+      }
+    } catch (err) {
+      console.error("❌ Fetch error:", err);
+    }
+
+    if (isMounted.current && currentFetch === fetchCounter.current) {
+      setLoading(false);
+      setIsRefreshing(false);
+    }
+  };
 
   // ============================================================
-  // EFFECT 2: Real-time subscription with automatic reconnection
+  // EFFECT 1: INITIAL FETCH + POLLING (GUARANTEED AUTO-UPDATE)
   // ============================================================
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    let reconnectAttempts = 0;
-    const maxReconnectAttempts = 5;
+    // Initial fetch
+    fetchStudents(true);
 
-    const setupSubscription = () => {
-      console.log(
-        `🔌 Setting up real-time subscription (attempt ${reconnectAttempts + 1})...`,
-      );
+    // ⭐ POLLING: Fetch every 5 seconds - GUARANTEES auto-update
+    // This is the reliable fallback that works even if WebSocket fails
+    intervalRef.current = setInterval(() => {
+      if (isMounted.current && isAuthenticated) {
+        fetchStudents(true);
+      }
+    }, 5000); // 5 seconds
 
-      // Clean up old channel
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
+    // Cleanup
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [isAuthenticated]);
+
+  // ============================================================
+  // EFFECT 2: REAL-TIME WEBSOCKET (BONUS - HAPPENS FAST)
+  // ============================================================
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    let channelRef = null;
+
+    const setupChannel = () => {
+      if (channelRef) {
+        supabase.removeChannel(channelRef);
+        channelRef = null;
       }
 
-      // Create new channel
       const channel = supabase
-        .channel("students-changes-live")
+        .channel("students-changes")
         .on(
           "postgres_changes",
           {
@@ -170,13 +172,10 @@ export default function DashboardPage() {
             schema: "public",
             table: "students",
           },
-          (payload) => {
-            console.log(
-              "🆕 New student registered:",
-              payload.new?.name || "Unknown",
-            );
-            // ⭐ TRIGGER REFRESH INSTEAD OF DIRECT FETCH
-            setRefreshTrigger((prev) => prev + 1);
+          () => {
+            console.log("🆕 WebSocket: New student detected!");
+            // Fetch immediately when event is received
+            fetchStudents(true);
           },
         )
         .on(
@@ -186,9 +185,9 @@ export default function DashboardPage() {
             schema: "public",
             table: "students",
           },
-          (payload) => {
-            console.log("✏️ Student updated:", payload.new?.name || "Unknown");
-            setRefreshTrigger((prev) => prev + 1);
+          () => {
+            console.log("✏️ WebSocket: Student updated!");
+            fetchStudents(true);
           },
         )
         .on(
@@ -198,68 +197,27 @@ export default function DashboardPage() {
             schema: "public",
             table: "students",
           },
-          (payload) => {
-            console.log("🗑️ Student deleted");
-            setRefreshTrigger((prev) => prev + 1);
+          () => {
+            console.log("🗑️ WebSocket: Student deleted!");
+            fetchStudents(true);
           },
         )
         .subscribe((status) => {
-          console.log(`📡 Realtime status: ${status}`);
-
-          if (status === "SUBSCRIBED") {
-            console.log("✅ Real-time listening for changes...");
-            reconnectAttempts = 0; // Reset on successful connection
-          } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-            console.warn("⚠️ Connection issue, will attempt reconnect...");
-            // Auto reconnect after delay
-            setTimeout(() => {
-              if (isMounted.current && isAuthenticated) {
-                reconnectAttempts++;
-                if (reconnectAttempts < maxReconnectAttempts) {
-                  setupSubscription();
-                } else {
-                  console.error(
-                    "❌ Max reconnect attempts reached. Using polling fallback.",
-                  );
-                }
-              }
-            }, 3000);
-          }
+          console.log(`📡 WebSocket status: ${status}`);
         });
 
-      channelRef.current = channel;
+      channelRef = channel;
     };
 
-    // Initial setup
-    setupSubscription();
+    setupChannel();
 
-    // ============================================================
-    // POLLING FALLBACK: Refresh every 30 seconds as safety net
-    // ============================================================
-    const intervalId = setInterval(() => {
-      if (isMounted.current && isAuthenticated) {
-        console.log("⏰ Polling fallback: checking for updates...");
-        setRefreshTrigger((prev) => prev + 1);
-      }
-    }, 30000); // 30 seconds
-
-    // Cleanup
     return () => {
-      clearInterval(intervalId);
-      if (channelRef.current) {
-        console.log("🔌 Cleaning up real-time subscription...");
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
+      if (channelRef) {
+        supabase.removeChannel(channelRef);
+        channelRef = null;
       }
     };
   }, [isAuthenticated]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
 
   // ============================================================
   // DATA ANALYSIS
@@ -549,21 +507,21 @@ export default function DashboardPage() {
               >
                 Real-time Analytics
               </span>
-              {/* Live indicator with sync status */}
+              {/* Live indicator - shows sync status */}
               <span
                 style={{
                   display: "inline-block",
                   width: "8px",
                   height: "8px",
                   borderRadius: "9999px",
-                  background: isSyncing ? "#fbbf24" : "#00f5ff",
-                  animation: isSyncing
+                  background: isRefreshing ? "#fbbf24" : "#00f5ff",
+                  animation: isRefreshing
                     ? "pulse 0.5s ease-in-out infinite"
                     : "pulse 2s ease-in-out infinite",
                   marginLeft: "0.5rem",
                 }}
               ></span>
-              {isSyncing && (
+              {isRefreshing && (
                 <span
                   style={{
                     color: "rgba(251,191,36,0.7)",
@@ -581,7 +539,7 @@ export default function DashboardPage() {
                   marginLeft: "0.25rem",
                 }}
               >
-                {lastSyncTime.toLocaleTimeString()}
+                {lastUpdate.toLocaleTimeString()}
               </span>
             </div>
           </div>
@@ -646,37 +604,26 @@ export default function DashboardPage() {
               />
             </div>
 
-            {/* Manual refresh - now truly optional */}
             <button
-              onClick={manualRefresh}
-              disabled={isSyncing}
+              onClick={() => fetchStudents(true)}
+              disabled={isRefreshing}
               style={{
-                color: isSyncing
+                color: isRefreshing
                   ? "rgba(251,191,36,0.4)"
                   : "rgba(0,245,255,0.4)",
                 fontSize: "0.65rem",
                 padding: "0.5rem 0.75rem",
                 border: "1px solid rgba(0,245,255,0.1)",
                 borderRadius: "0.75rem",
-                background: isSyncing ? "rgba(251,191,36,0.05)" : "transparent",
-                cursor: isSyncing ? "default" : "pointer",
+                background: isRefreshing
+                  ? "rgba(251,191,36,0.05)"
+                  : "transparent",
+                cursor: isRefreshing ? "default" : "pointer",
                 transition: "all 0.3s",
               }}
-              onMouseEnter={(e) => {
-                if (!isSyncing) {
-                  e.currentTarget.style.borderColor = "rgba(0,245,255,0.3)";
-                  e.currentTarget.style.color = "rgba(0,245,255,0.7)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isSyncing) {
-                  e.currentTarget.style.borderColor = "rgba(0,245,255,0.1)";
-                  e.currentTarget.style.color = "rgba(0,245,255,0.4)";
-                }
-              }}
-              title={isSyncing ? "Syncing..." : "Manual Refresh"}
+              title={isRefreshing ? "Syncing..." : "Manual Refresh"}
             >
-              {isSyncing ? "⏳" : "🔄"}
+              {isRefreshing ? "⏳" : "🔄"}
             </button>
 
             <button
