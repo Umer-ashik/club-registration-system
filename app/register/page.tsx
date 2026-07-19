@@ -18,6 +18,7 @@ export default function RegisterPage() {
     suggestions: "",
   });
   const [file, setFile] = useState(null);
+  const [fileError, setFileError] = useState("");
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -33,6 +34,25 @@ export default function RegisterPage() {
       }
     } else {
       setForm({ ...form, [name]: value });
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files?.[0] || null;
+    setFileError("");
+
+    if (selectedFile) {
+      // 1 MB = 1,048,576 bytes
+      const maxSize = 1 * 1024 * 1024;
+      if (selectedFile.size > maxSize) {
+        setFileError("❌ File is too large. Please upload a photo under 1 MB.");
+        e.target.value = ""; // reset input
+        setFile(null);
+        return;
+      }
+      setFile(selectedFile);
+    } else {
+      setFile(null);
     }
   };
 
@@ -156,7 +176,7 @@ export default function RegisterPage() {
         <h2 className="cyber-heading">⚡ Join</h2>
         <h1 className="cyber-heading"> DELITECH </h1>
         <p className="cyber-subtitle" style={{ marginBottom: "1.5rem" }}>
-          CHANGE IS CONSTANT,DELITECH KEEPS YOU AHEAD
+          CHANGE IS CONSTANT, DELITECH KEEPS YOU AHEAD
         </p>
 
         <form
@@ -186,7 +206,7 @@ export default function RegisterPage() {
             required
           />
           <input
-            name="department that you belongs ?"
+            name="department"
             placeholder="Department (e.g., BCA)"
             onChange={handleChange}
             className="cyber-input"
@@ -195,7 +215,7 @@ export default function RegisterPage() {
           <input
             name="semester"
             type="number"
-            placeholder="your current Semester"
+            placeholder="Your Current Semester"
             onChange={handleChange}
             className="cyber-input"
             required
@@ -213,17 +233,56 @@ export default function RegisterPage() {
             )}
           </div>
 
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
-            className="cyber-file"
-            required
-          />
+          {/* ===== UPDATED FILE INPUT WITH CUSTOM MESSAGE & VALIDATION ===== */}
+          <div style={{ marginTop: "0.5rem" }}>
+            <label className="cyber-label" style={{ marginBottom: "0.25rem" }}>
+              📸 Upload Photo (max 1 MB)
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="cyber-file"
+              required
+            />
+            {!file && !fileError && (
+              <p
+                style={{
+                  color: "rgba(255,255,255,0.3)",
+                  fontSize: "0.7rem",
+                  marginTop: "0.25rem",
+                }}
+              >
+                Please upload a photo under 1 MB (recommended ~500 KB)
+              </p>
+            )}
+            {file && !fileError && (
+              <p
+                style={{
+                  color: "rgba(0,245,255,0.6)",
+                  fontSize: "0.7rem",
+                  marginTop: "0.25rem",
+                }}
+              >
+                ✅ {file.name} ({(file.size / 1024).toFixed(1)} KB)
+              </p>
+            )}
+            {fileError && (
+              <p
+                style={{
+                  color: "#ef4444",
+                  fontSize: "0.75rem",
+                  marginTop: "0.25rem",
+                }}
+              >
+                {fileError}
+              </p>
+            )}
+          </div>
 
           <textarea
             name="suggestions"
-            placeholder="your intention to join this club?"
+            placeholder="Your intention to join this club?"
             onChange={handleChange}
             className="cyber-input textarea"
           />
