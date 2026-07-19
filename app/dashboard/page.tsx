@@ -62,9 +62,12 @@ export default function DashboardPage() {
   const [userRole, setUserRole] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDepartment, setFilterDepartment] = useState("All");
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState(new Date());
 
-  // Use ref to track if component is mounted
+  // ⭐ KEY FIX: Use a refresh trigger to force re-fetch
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const channelRef = useRef(null);
   const isMounted = useRef(true);
 
   const handleLogin = (e) => {
@@ -80,97 +83,183 @@ export default function DashboardPage() {
   };
 
   // ============================================================
-  // FETCH STUDENTS - MEMOIZED WITH useCallback
+  // FETCH STUDENTS - THE ONLY PLACE DATA IS FETCHED
   // ============================================================
-  const fetchStudents = useCallback(async () => {
-    if (!isMounted.current) return;
+  const fetchStudents = useCallback(
+    async (showSync = true) => {
+      if (!isMounted.current) return;
 
-    // Only show loading on initial fetch, not on auto-refresh
-    if (students.length === 0) {
-      setLoading(true);
-    } else {
-      setIsRefreshing(true);
-    }
+      if (showSync && students.length > 0) {
+        setIsSyncing(true);
+      }
+      if (students.length === 0) {
+        setLoading(true);
+      }
 
-    const { data, error } = await supabase
-      .from("students")
-      .select("*")
-      .order("registered_at", { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from("students")
+          .select("*")
+          .order("registered_at", { ascending: false });
 
-    if (error) {
-      console.error("Error fetching students:", error);
-    } else if (isMounted.current) {
-      setStudents(data || []);
-    }
+        if (error) {
+          console.error("❌ Error fetching students:", error);
+        } else if (isMounted.current) {
+          setStudents(data || []);
+          setLastSyncTime(new Date());
+          console.log(
+            `✅ Fetched ${data?.length || 0} students at ${new Date().toLocaleTimeString()}`,
+          );
+        }
+      } catch (err) {
+        console.error("❌ Fetch error:", err);
+      }
 
-    if (isMounted.current) {
-      setLoading(false);
-      setIsRefreshing(false);
-    }
-  }, [students.length]);
+      if (isMounted.current) {
+        setLoading(false);
+        setIsSyncing(false);
+      }
+    },
+    [students.length],
+  );
 
   // ============================================================
-  // REAL-TIME SUBSCRIPTION - KEPT ALIVE PERMANENTLY
+  // MANUAL REFRESH - USED BY BUTTON AND TRIGGER
+  // ============================================================
+  const manualRefresh = useCallback(() => {
+    console.log("🔄 Manual refresh triggered");
+    setRefreshTrigger((prev) => prev + 1);
+  }, []);
+
+  // ============================================================
+  // EFFECT 1: Watch refreshTrigger and fetch data
+  // ============================================================
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchStudents(true);
+    }
+  }, [isAuthenticated, refreshTrigger, fetchStudents]);
+
+  // ============================================================
+  // EFFECT 2: Real-time subscription with automatic reconnection
   // ============================================================
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    // Initial fetch
-    fetchStudents();
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
 
-    // Set up real-time subscription
-    const channel = supabase
-      .channel("students-changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "students",
-        },
-        (payload) => {
-          console.log("🔄 New student registered:", payload.new);
-          // Fetch fresh data without re-subscribing
-          fetchStudents();
-        },
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "students",
-        },
-        (payload) => {
-          console.log("🔄 Student updated:", payload.new);
-          fetchStudents();
-        },
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "DELETE",
-          schema: "public",
-          table: "students",
-        },
-        (payload) => {
-          console.log("🔄 Student deleted:", payload.old);
-          fetchStudents();
-        },
-      )
-      .subscribe((status) => {
-        console.log("📡 Realtime connection status:", status);
-        if (status === "SUBSCRIBED") {
-          console.log("✅ Real-time listening for changes...");
-        }
-      });
+    const setupSubscription = () => {
+      console.log(
+        `🔌 Setting up real-time subscription (attempt ${reconnectAttempts + 1})...`,
+      );
 
-    // Cleanup on unmount or logout
-    return () => {
-      console.log("🔌 Cleaning up real-time subscription...");
-      supabase.removeChannel(channel);
+      // Clean up old channel
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
+
+      // Create new channel
+      const channel = supabase
+        .channel("students-changes-live")
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "students",
+          },
+          (payload) => {
+            console.log(
+              "🆕 New student registered:",
+              payload.new?.name || "Unknown",
+            );
+            // ⭐ TRIGGER REFRESH INSTEAD OF DIRECT FETCH
+            setRefreshTrigger((prev) => prev + 1);
+          },
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "students",
+          },
+          (payload) => {
+            console.log("✏️ Student updated:", payload.new?.name || "Unknown");
+            setRefreshTrigger((prev) => prev + 1);
+          },
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "DELETE",
+            schema: "public",
+            table: "students",
+          },
+          (payload) => {
+            console.log("🗑️ Student deleted");
+            setRefreshTrigger((prev) => prev + 1);
+          },
+        )
+        .subscribe((status) => {
+          console.log(`📡 Realtime status: ${status}`);
+
+          if (status === "SUBSCRIBED") {
+            console.log("✅ Real-time listening for changes...");
+            reconnectAttempts = 0; // Reset on successful connection
+          } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+            console.warn("⚠️ Connection issue, will attempt reconnect...");
+            // Auto reconnect after delay
+            setTimeout(() => {
+              if (isMounted.current && isAuthenticated) {
+                reconnectAttempts++;
+                if (reconnectAttempts < maxReconnectAttempts) {
+                  setupSubscription();
+                } else {
+                  console.error(
+                    "❌ Max reconnect attempts reached. Using polling fallback.",
+                  );
+                }
+              }
+            }, 3000);
+          }
+        });
+
+      channelRef.current = channel;
     };
-  }, [isAuthenticated, fetchStudents]); // Only depend on isAuthenticated and fetchStudents
+
+    // Initial setup
+    setupSubscription();
+
+    // ============================================================
+    // POLLING FALLBACK: Refresh every 30 seconds as safety net
+    // ============================================================
+    const intervalId = setInterval(() => {
+      if (isMounted.current && isAuthenticated) {
+        console.log("⏰ Polling fallback: checking for updates...");
+        setRefreshTrigger((prev) => prev + 1);
+      }
+    }, 30000); // 30 seconds
+
+    // Cleanup
+    return () => {
+      clearInterval(intervalId);
+      if (channelRef.current) {
+        console.log("🔌 Cleaning up real-time subscription...");
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
+    };
+  }, [isAuthenticated]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   // ============================================================
   // DATA ANALYSIS
@@ -425,7 +514,12 @@ export default function DashboardPage() {
               DELITECH.IT.CLUB
             </h1>
             <div
-              style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                flexWrap: "wrap",
+              }}
             >
               <span
                 style={{
@@ -455,22 +549,24 @@ export default function DashboardPage() {
               >
                 Real-time Analytics
               </span>
-              {/* Live indicator */}
+              {/* Live indicator with sync status */}
               <span
                 style={{
                   display: "inline-block",
                   width: "8px",
                   height: "8px",
                   borderRadius: "9999px",
-                  background: isRefreshing ? "#fbbf24" : "#00f5ff",
-                  animation: "pulse 2s ease-in-out infinite",
+                  background: isSyncing ? "#fbbf24" : "#00f5ff",
+                  animation: isSyncing
+                    ? "pulse 0.5s ease-in-out infinite"
+                    : "pulse 2s ease-in-out infinite",
                   marginLeft: "0.5rem",
                 }}
               ></span>
-              {isRefreshing && (
+              {isSyncing && (
                 <span
                   style={{
-                    color: "rgba(251,191,36,0.6)",
+                    color: "rgba(251,191,36,0.7)",
                     fontSize: "0.55rem",
                     marginLeft: "0.25rem",
                   }}
@@ -478,6 +574,15 @@ export default function DashboardPage() {
                   syncing...
                 </span>
               )}
+              <span
+                style={{
+                  color: "rgba(255,255,255,0.15)",
+                  fontSize: "0.5rem",
+                  marginLeft: "0.25rem",
+                }}
+              >
+                {lastSyncTime.toLocaleTimeString()}
+              </span>
             </div>
           </div>
 
@@ -541,30 +646,37 @@ export default function DashboardPage() {
               />
             </div>
 
-            {/* Manual refresh button - now optional */}
+            {/* Manual refresh - now truly optional */}
             <button
-              onClick={() => fetchStudents()}
+              onClick={manualRefresh}
+              disabled={isSyncing}
               style={{
-                color: "rgba(0,245,255,0.4)",
+                color: isSyncing
+                  ? "rgba(251,191,36,0.4)"
+                  : "rgba(0,245,255,0.4)",
                 fontSize: "0.65rem",
                 padding: "0.5rem 0.75rem",
                 border: "1px solid rgba(0,245,255,0.1)",
                 borderRadius: "0.75rem",
-                background: "transparent",
-                cursor: "pointer",
+                background: isSyncing ? "rgba(251,191,36,0.05)" : "transparent",
+                cursor: isSyncing ? "default" : "pointer",
                 transition: "all 0.3s",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "rgba(0,245,255,0.3)";
-                e.currentTarget.style.color = "rgba(0,245,255,0.7)";
+                if (!isSyncing) {
+                  e.currentTarget.style.borderColor = "rgba(0,245,255,0.3)";
+                  e.currentTarget.style.color = "rgba(0,245,255,0.7)";
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "rgba(0,245,255,0.1)";
-                e.currentTarget.style.color = "rgba(0,245,255,0.4)";
+                if (!isSyncing) {
+                  e.currentTarget.style.borderColor = "rgba(0,245,255,0.1)";
+                  e.currentTarget.style.color = "rgba(0,245,255,0.4)";
+                }
               }}
-              title="Manual Refresh"
+              title={isSyncing ? "Syncing..." : "Manual Refresh"}
             >
-              {isRefreshing ? "⏳" : "🔄"}
+              {isSyncing ? "⏳" : "🔄"}
             </button>
 
             <button
