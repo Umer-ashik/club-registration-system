@@ -517,7 +517,27 @@ body {
 select.cyber-select {
   background: rgba(255, 255, 255, 0.03) !important;
   border: 1px solid rgba(0, 245, 255, 0.2) !important;
-  color: #089bab !important;
+  color: #ffffff !important;
+}
+
+select.cyber-select option {
+  background: #0a0a0f !important;
+  color: #ffffff !important;
+  padding: 0.5rem !important;
+}
+
+select.cyber-select option:hover {
+  background: rgba(0, 245, 255, 0.1) !important;
+}
+
+/* Style the dropdown arrow */
+select.cyber-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='rgba(0,245,255,0.4)' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
 }
 
 select.cyber-select option {
@@ -538,4 +558,76 @@ select.cyber-select {
   background-repeat: no-repeat;
   background-position: right 1rem center;
   padding-right: 2.5rem;
+}
+/* ===== RESPONSIVE DASHBOARD FIXES ===== */
+
+/* Tablets & small laptops */
+@media (max-width: 1024px) {
+  .dashboard-grid-2 {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .dashboard-grid-3 {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+/* Mobile phones */
+@media (max-width: 768px) {
+  /* Make all dashboard sections full-width */
+  .dashboard-grid-2,
+  .dashboard-grid-3 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Reduce padding and margins */
+  .cyber-card.dashboard {
+    padding: 0.75rem !important;
+  }
+
+  /* Make header stack vertically */
+  .dashboard-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  /* Reduce font sizes */
+  .dashboard-title {
+    font-size: 1.25rem !important;
+  }
+
+  /* Gallery: 2 columns on mobile */
+  .dashboard-gallery {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Search bar: stack vertically */
+  .dashboard-search {
+    flex-direction: column !important;
+  }
+  .dashboard-search input,
+  .dashboard-search select {
+    width: 100% !important;
+    min-width: unset !important;
+  }
+
+  /* Stats boxes: wrap */
+  .dashboard-stats {
+    flex-wrap: wrap !important;
+  }
+}
+
+/* Very small phones (<= 480px) */
+@media (max-width: 480px) {
+  .dashboard-gallery {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .cyber-card.dashboard {
+    padding: 0.5rem !important;
+  }
+  .dashboard-title {
+    font-size: 1rem !important;
+  }
+  .dashboard-stats .stat {
+    padding: 0.25rem 0.5rem !important;
+  }
 }
