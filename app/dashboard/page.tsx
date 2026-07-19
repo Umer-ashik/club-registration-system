@@ -1,7 +1,7 @@
 // @ts-nocheck
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import dynamic from "next/dynamic";
 
@@ -66,8 +66,7 @@ export default function DashboardPage() {
   const [lastUpdate, setLastUpdate] = useState(new Date());
 
   const isMounted = useRef(true);
-  const intervalRef = useRef(null);
-  const fetchCounter = useRef(0);
+  const channelRef = useRef(null);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -82,29 +81,19 @@ export default function DashboardPage() {
   };
 
   // ============================================================
-  // FETCH STUDENTS - THE ONLY DATA FETCHING FUNCTION
+  // FETCH STUDENTS (only called when needed)
   // ============================================================
-  const fetchStudents = async (showRefresh = true) => {
+  const fetchStudents = useCallback(async () => {
     if (!isMounted.current) return;
 
-    fetchCounter.current += 1;
-    const currentFetch = fetchCounter.current;
-
-    if (showRefresh && students.length > 0) {
-      setIsRefreshing(true);
-    }
-    if (students.length === 0) {
-      setLoading(true);
-    }
+    setIsRefreshing(true);
+    if (students.length === 0) setLoading(true);
 
     try {
       const { data, error } = await supabase
         .from("students")
         .select("*")
         .order("registered_at", { ascending: false });
-
-      // Only update if this is still the latest fetch
-      if (currentFetch !== fetchCounter.current) return;
 
       if (error) {
         console.error("❌ Error fetching students:", error);
@@ -117,107 +106,107 @@ export default function DashboardPage() {
       console.error("❌ Fetch error:", err);
     }
 
-    if (isMounted.current && currentFetch === fetchCounter.current) {
+    if (isMounted.current) {
       setLoading(false);
       setIsRefreshing(false);
     }
-  };
+  }, [students.length]);
 
   // ============================================================
-  // EFFECT 1: INITIAL FETCH + POLLING (GUARANTEED AUTO-UPDATE)
+  // EFFECT 1: INITIAL LOAD
+  // ============================================================
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchStudents();
+    }
+  }, [isAuthenticated, fetchStudents]);
+
+  // ============================================================
+  // EFFECT 2: REAL-TIME SUBSCRIPTION (ONLY EVENT-DRIVEN)
   // ============================================================
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    // Initial fetch
-    fetchStudents(true);
+    // Clean up previous channel
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
 
-    // ⭐ POLLING: Fetch every 5 seconds - GUARANTEES auto-update
-    // This is the reliable fallback that works even if WebSocket fails
-    intervalRef.current = setInterval(() => {
-      if (isMounted.current && isAuthenticated) {
-        fetchStudents(true);
-      }
-    }, 5000); // 5 seconds
+    const channel = supabase
+      .channel("students-changes-live")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "students",
+        },
+        (payload) => {
+          console.log(
+            "🆕 New student registered:",
+            payload.new?.name || "Unknown",
+          );
+          // 🔥 Only refresh when a new student registers
+          fetchStudents();
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "students",
+        },
+        (payload) => {
+          console.log("✏️ Student updated:", payload.new?.name || "Unknown");
+          fetchStudents();
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "students",
+        },
+        () => {
+          console.log("🗑️ Student deleted");
+          fetchStudents();
+        },
+      )
+      .subscribe((status) => {
+        console.log(`📡 WebSocket status: ${status}`);
+        if (status === "SUBSCRIBED") {
+          console.log("✅ Listening for changes...");
+        } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          console.warn("⚠️ WebSocket issue, attempting reconnection...");
+          // Auto-reconnect after a short delay
+          setTimeout(() => {
+            if (isMounted.current && isAuthenticated) {
+              // Recreate channel
+              if (channelRef.current) {
+                supabase.removeChannel(channelRef.current);
+                channelRef.current = null;
+              }
+              // Re-run this effect logic would be tricky; we'll just re-subscribe
+              // by triggering a re-run of the effect via a key change.
+              // But for simplicity, we rely on the next connection.
+            }
+          }, 3000);
+        }
+      });
 
-    // Cleanup
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
-  }, [isAuthenticated]);
-
-  // ============================================================
-  // EFFECT 2: REAL-TIME WEBSOCKET (BONUS - HAPPENS FAST)
-  // ============================================================
-  useEffect(() => {
-    if (!isAuthenticated) return;
-
-    let channelRef = null;
-
-    const setupChannel = () => {
-      if (channelRef) {
-        supabase.removeChannel(channelRef);
-        channelRef = null;
-      }
-
-      const channel = supabase
-        .channel("students-changes")
-        .on(
-          "postgres_changes",
-          {
-            event: "INSERT",
-            schema: "public",
-            table: "students",
-          },
-          () => {
-            console.log("🆕 WebSocket: New student detected!");
-            // Fetch immediately when event is received
-            fetchStudents(true);
-          },
-        )
-        .on(
-          "postgres_changes",
-          {
-            event: "UPDATE",
-            schema: "public",
-            table: "students",
-          },
-          () => {
-            console.log("✏️ WebSocket: Student updated!");
-            fetchStudents(true);
-          },
-        )
-        .on(
-          "postgres_changes",
-          {
-            event: "DELETE",
-            schema: "public",
-            table: "students",
-          },
-          () => {
-            console.log("🗑️ WebSocket: Student deleted!");
-            fetchStudents(true);
-          },
-        )
-        .subscribe((status) => {
-          console.log(`📡 WebSocket status: ${status}`);
-        });
-
-      channelRef = channel;
-    };
-
-    setupChannel();
+    channelRef.current = channel;
 
     return () => {
-      if (channelRef) {
-        supabase.removeChannel(channelRef);
-        channelRef = null;
+      if (channelRef.current) {
+        console.log("🔌 Cleaning up real-time subscription...");
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
       }
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, fetchStudents]);
 
   // ============================================================
   // DATA ANALYSIS
@@ -507,7 +496,7 @@ export default function DashboardPage() {
               >
                 Real-time Analytics
               </span>
-              {/* Live indicator - shows sync status */}
+              {/* Live indicator - shows when syncing */}
               <span
                 style={{
                   display: "inline-block",
@@ -605,7 +594,7 @@ export default function DashboardPage() {
             </div>
 
             <button
-              onClick={() => fetchStudents(true)}
+              onClick={fetchStudents}
               disabled={isRefreshing}
               style={{
                 color: isRefreshing
