@@ -4,7 +4,6 @@
 import Link from "next/link";
 
 export default function SuccessPage() {
-  // ✅ MUST use NEXT_PUBLIC_ prefix for client components
   const link = process.env.NEXT_PUBLIC_WHATSAPP_GROUP_LINK || "";
 
   const handleWhatsAppClick = (e) => {
@@ -113,8 +112,9 @@ export default function SuccessPage() {
           📱 Join WhatsApp Group
         </button>
 
+        {/* ===== CHANGED: Go to Registration page ===== */}
         <Link
-          href="/"
+          href="/register"
           style={{
             display: "block",
             marginTop: "0.75rem",
@@ -123,7 +123,7 @@ export default function SuccessPage() {
             textDecoration: "none",
           }}
         >
-          ← Back to Home
+          ← Back to Registration
         </Link>
 
         <p
