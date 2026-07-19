@@ -358,12 +358,10 @@ export default function DashboardPage() {
           }}
         >
           <div>
-            <h1 style={{ fontSize: "2rem", fontWeight: 700, color: "#ffffff" }}>
+            <h1 style={{ fontSize: "2rem", fontWeight: 700, color: "#0234fa" }}>
               DELITECH.IT.CLUB
             </h1>
-            <h3 style={{ fontSize: "2rem", fontWeight: 700, color: "#ffffff" }}>
-              CHANGE IS CONSTANT, DELITECH KEEPS YOU AHEAD
-            </h3>
+            <p style={{ color: "rgba(95, 0, 212, 0.3)", fontSize: "0.8rem" }}></p>
             <div
               style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
             >
