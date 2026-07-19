@@ -27,25 +27,24 @@ body::before {
   background-size: 40% auto;
   background-position: center;
   background-repeat: no-repeat;
-  opacity: 0.05; /* Very faint – adjust to your liking (0.03–0.08) */
+  opacity: 0.05; /* adjust to your liking (0.03–0.08) */
   z-index: 0;
   pointer-events: none;
-  transform: scale(1.2); /* Slightly larger for dramatic effect */
+  transform: scale(1.2);
 }
 
-/* Optional: Subtle animated gradient overlay on the background */
 body::after {
   content: '';
   position: fixed;
   inset: 0;
-  background: 
+  background:
     radial-gradient(ellipse at 20% 50%, rgba(0, 245, 255, 0.03) 0%, transparent 60%),
     radial-gradient(ellipse at 80% 50%, rgba(180, 77, 255, 0.03) 0%, transparent 60%);
   z-index: 0;
   pointer-events: none;
 }
 
-/* ----- 3D SPINNING LOGO (for the UI element) ----- */
+/* ----- 3D SPINNING LOGO (UI element) ----- */
 @keyframes spin3D {
   0% { transform: rotateY(0deg) scale(1); }
   50% { transform: rotateY(180deg) scale(1.05); }
@@ -62,13 +61,15 @@ body::after {
   animation-duration: 2s;
 }
 
-/* ----- GLASSMORPHISM CARD ----- */
+/* ============================================================
+   GLASSMORPHISM CARDS
+   ============================================================ */
 .glass-card {
   background: rgba(255, 255, 255, 0.04) !important;
   backdrop-filter: blur(24px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 
+  box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
   transition: all 0.3s ease;
@@ -76,13 +77,15 @@ body::after {
 
 .glass-card:hover {
   border-color: rgba(0, 245, 255, 0.15) !important;
-  box-shadow: 
+  box-shadow:
     0 8px 40px rgba(0, 0, 0, 0.5),
     0 0 60px rgba(0, 245, 255, 0.02),
     inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
 }
 
-/* ----- LAYOUT ----- */
+/* ============================================================
+   LAYOUT & CYBER CARD
+   ============================================================ */
 .cyber-page {
   min-height: 100vh;
   display: flex;
@@ -94,7 +97,6 @@ body::after {
   overflow: hidden;
 }
 
-/* ----- CYBER CARD (alias for glass-card) ----- */
 .cyber-card {
   background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(24px) saturate(180%);
@@ -114,7 +116,9 @@ body::after {
   padding: 1.5rem;
 }
 
-/* ----- CYBER INPUT (glass style) ----- */
+/* ============================================================
+   INPUTS, BUTTONS, HEADINGS
+   ============================================================ */
 .cyber-input {
   width: 100%;
   padding: 0.75rem 1rem;
@@ -144,7 +148,6 @@ body::after {
   resize: none;
 }
 
-/* ----- CYBER BUTTON (glass + neon) ----- */
 .cyber-btn {
   width: 100%;
   padding: 0.75rem 1.5rem;
@@ -174,7 +177,6 @@ body::after {
   cursor: not-allowed;
 }
 
-/* ----- HEADING (neon gradient stays) ----- */
 .cyber-heading {
   font-size: 2.5rem;
   font-weight: 900;
@@ -200,7 +202,6 @@ body::after {
   font-weight: 600;
 }
 
-/* ----- LABEL ----- */
 .cyber-label {
   display: block;
   color: rgba(0, 245, 255, 0.5);
@@ -211,7 +212,9 @@ body::after {
   margin-top: 0.5rem;
 }
 
-/* ----- CHECKBOX GROUP ----- */
+/* ============================================================
+   CHECKBOXES & FILE INPUT
+   ============================================================ */
 .cyber-checkbox-group {
   display: flex;
   flex-wrap: wrap;
@@ -242,7 +245,6 @@ body::after {
   accent-color: #00f5ff;
 }
 
-/* ----- FILE INPUT ----- */
 .cyber-file {
   width: 100%;
   padding: 0.5rem;
@@ -274,7 +276,6 @@ body::after {
 /* ============================================================
    DASHBOARD SPECIFIC (Glassmorphism)
    ============================================================ */
-
 .dashboard-header {
   display: flex;
   flex-direction: row;
@@ -390,7 +391,6 @@ body::after {
   border-color: #00f5ff;
 }
 
-/* Glass sections inside dashboard */
 .dashboard-section {
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(12px) saturate(160%);
@@ -557,7 +557,7 @@ select.cyber-select {
   .cyber-heading {
     font-size: 1.8rem;
   }
-  
+
   .dashboard-grid-2,
   .dashboard-grid-3 {
     grid-template-columns: 1fr !important;
@@ -592,8 +592,7 @@ select.cyber-select {
   .dashboard-stats {
     flex-wrap: wrap !important;
   }
-  
-  /* Background logo smaller on mobile */
+
   body::before {
     background-size: 60% auto !important;
     opacity: 0.04 !important;

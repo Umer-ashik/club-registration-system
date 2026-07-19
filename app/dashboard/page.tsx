@@ -343,13 +343,12 @@ export default function DashboardPage() {
   }
 
   // ============================================================
-  // DASHBOARD RENDER - RESPONSIVE VERSION
+  // DASHBOARD RENDER - GLASSMORPHISM VERSION
   // ============================================================
   return (
     <div
       style={{
         minHeight: "100vh",
-        background: "#0a0a0f",
         padding: "1.5rem",
         position: "relative",
         overflow: "hidden",
@@ -371,7 +370,7 @@ export default function DashboardPage() {
             left: "25%",
             width: "24rem",
             height: "24rem",
-            background: "rgba(0,245,255,0.04)",
+            background: "rgba(0, 245, 255, 0.03)",
             borderRadius: "9999px",
             filter: "blur(80px)",
           }}
@@ -383,7 +382,7 @@ export default function DashboardPage() {
             right: "25%",
             width: "24rem",
             height: "24rem",
-            background: "rgba(180,77,255,0.04)",
+            background: "rgba(180, 77, 255, 0.03)",
             borderRadius: "9999px",
             filter: "blur(80px)",
           }}
@@ -400,7 +399,14 @@ export default function DashboardPage() {
         }}
       >
         {/* ===== HEADER ===== */}
-        <div className="dashboard-header">
+        <div
+          className="dashboard-header glass-card"
+          style={{
+            padding: "1rem 1.5rem",
+            borderRadius: "1.5rem",
+            marginBottom: "1.5rem",
+          }}
+        >
           <div>
             <h1 className="dashboard-title">DELITECH.IT.CLUB</h1>
             <div
@@ -546,7 +552,14 @@ export default function DashboardPage() {
         </div>
 
         {/* ===== SEARCH ===== */}
-        <div className="dashboard-search">
+        <div
+          className="dashboard-search glass-card"
+          style={{
+            padding: "1rem",
+            borderRadius: "1.5rem",
+            marginBottom: "1.5rem",
+          }}
+        >
           <input
             type="text"
             placeholder="Search students..."
@@ -577,19 +590,20 @@ export default function DashboardPage() {
 
         {loading ? (
           <div
+            className="glass-card"
             style={{
               textAlign: "center",
               padding: "5rem",
-              color: "rgba(0,245,255,0.4)",
+              borderRadius: "1.5rem",
             }}
           >
-            Loading data...
+            <p style={{ color: "rgba(255,255,255,0.4)" }}>Loading data...</p>
           </div>
         ) : (
           <>
-            {/* ===== CHARTS - Using CSS classes for responsive grid ===== */}
+            {/* ===== CHARTS ===== */}
             <div className="dashboard-grid-2">
-              <div className="dashboard-section">
+              <div className="dashboard-section glass-card">
                 <h2>🏛️ Department Distribution</h2>
                 {deptLabels.length > 0 ? (
                   <div style={{ height: "256px" }}>
@@ -630,7 +644,7 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              <div className="dashboard-section">
+              <div className="dashboard-section glass-card">
                 <h2>🎯 Domain Interests</h2>
                 {domainLabels.length > 0 ? (
                   <div style={{ height: "256px" }}>
@@ -679,9 +693,9 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* ===== LEADERBOARDS - Using CSS classes ===== */}
+            {/* ===== LEADERBOARDS ===== */}
             <div className="dashboard-grid-3">
-              <div className="dashboard-section">
+              <div className="dashboard-section glass-card">
                 <h2>🏆 Top Departments</h2>
                 {deptLeaderboard.length > 0 ? (
                   deptLeaderboard.map(([dept, count], i) => (
@@ -716,7 +730,7 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              <div className="dashboard-section">
+              <div className="dashboard-section glass-card">
                 <h2>🚀 Top Interests</h2>
                 {domainLeaderboard.length > 0 ? (
                   domainLeaderboard.map(([domain, count], i) => (
@@ -751,7 +765,7 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              <div className="dashboard-section">
+              <div className="dashboard-section glass-card">
                 <h2>📚 Semester Distribution</h2>
                 {semesterLabels.length > 0 ? (
                   semesterLabels.map((sem) => (
@@ -775,7 +789,7 @@ export default function DashboardPage() {
             </div>
 
             {/* ===== SUGGESTIONS ===== */}
-            <div className="dashboard-section">
+            <div className="dashboard-section glass-card">
               <h2>💬 Student Suggestions ({suggestions.length})</h2>
               {suggestions.length > 0 ? (
                 <div
@@ -793,9 +807,10 @@ export default function DashboardPage() {
                       key={i}
                       style={{
                         background: "rgba(255,255,255,0.03)",
-                        border: "1px solid rgba(0,245,255,0.05)",
+                        border: "1px solid rgba(255,255,255,0.06)",
                         borderRadius: "0.75rem",
                         padding: "0.75rem",
+                        backdropFilter: "blur(4px)",
                       }}
                     >
                       <p
@@ -831,8 +846,8 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {/* ===== GALLERY - Using CSS class ===== */}
-            <div className="dashboard-section">
+            {/* ===== GALLERY ===== */}
+            <div className="dashboard-section glass-card">
               <div
                 style={{
                   display: "flex",
@@ -862,12 +877,12 @@ export default function DashboardPage() {
                           style={{
                             width: "100%",
                             height: "160px",
-                            background: "rgba(255,255,255,0.03)",
+                            background: "rgba(255,255,255,0.02)",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
                             fontSize: "2.5rem",
-                            color: "rgba(255,255,255,0.2)",
+                            color: "rgba(255,255,255,0.15)",
                           }}
                         >
                           🎓
@@ -878,7 +893,7 @@ export default function DashboardPage() {
                         <div className="dept">{s.department}</div>
                         <div
                           style={{
-                            color: "rgba(255,255,255,0.2)",
+                            color: "rgba(255,255,255,0.15)",
                             fontSize: "0.6rem",
                             marginTop: "0.25rem",
                           }}
