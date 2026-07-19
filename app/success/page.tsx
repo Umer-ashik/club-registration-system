@@ -7,17 +7,22 @@ export default function SuccessPage() {
   const link = process.env.WHATSAPP_GROUP_LINK || "#";
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[#0a0a0f]">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
       {/* Animated Background */}
-      <div className="absolute inset-0 -z-10">
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: -1,
+        }}
+      >
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
 
-      <div className="bg-[#0f0f1e] rounded-3xl p-6 md:p-8 max-w-md w-full text-center border border-cyan-500/20">
-        {/* 3D Logo */}
+      <div className="cyber-card text-center">
         <div className="flex justify-center mb-4">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border-2 border-cyan-500/30 flex items-center justify-center text-5xl backdrop-blur-sm animate-3d-spin">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border-2 border-cyan-500/30 flex items-center justify-center text-5xl backdrop-blur-sm animate-3d-spin shadow-[0_0_40px_rgba(0,245,255,0.1)]">
             🎉
           </div>
         </div>
@@ -25,7 +30,7 @@ export default function SuccessPage() {
         <h1 className="text-3xl md:text-4xl font-bold text-white">
           Welcome Aboard!
         </h1>
-        <p className="text-cyan-400/40 text-center text-sm mb-6">
+        <p className="text-cyan-400/40 text-sm mb-6">
           You're now part of the future
         </p>
 
@@ -38,11 +43,7 @@ export default function SuccessPage() {
           </p>
         </div>
 
-        <a
-          href={link}
-          target="_blank"
-          className="block w-full py-3 rounded-xl bg-cyan-500/20 border border-cyan-500/30 text-white hover:bg-cyan-500/30 transition text-sm uppercase tracking-wider font-semibold"
-        >
+        <a href={link} target="_blank" className="cyber-btn block text-center">
           📱 Join WhatsApp Group
         </a>
 

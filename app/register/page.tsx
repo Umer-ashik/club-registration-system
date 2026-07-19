@@ -107,18 +107,22 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[#0a0a0f]">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
       {/* Animated Background */}
-      <div className="absolute inset-0 -z-10">
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: -1,
+        }}
+      >
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
 
-      {/* Cyber Card */}
-      <div className="bg-[#0f0f1e] rounded-3xl p-6 md:p-8 max-w-md w-full border border-cyan-500/20">
-        {/* 3D Logo */}
+      <div className="cyber-card">
         <div className="flex justify-center mb-4">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border-2 border-cyan-500/30 flex items-center justify-center text-4xl backdrop-blur-sm animate-3d-spin">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border-2 border-cyan-500/30 flex items-center justify-center text-4xl backdrop-blur-sm animate-3d-spin shadow-[0_0_40px_rgba(0,245,255,0.1)]">
             🖥️
           </div>
         </div>
@@ -135,7 +139,7 @@ export default function RegisterPage() {
             name="name"
             placeholder="Full Name"
             onChange={handleChange}
-            className="w-full p-3 rounded-xl bg-white/5 border border-cyan-500/20 text-white placeholder:text-white/20 focus:border-cyan-400 focus:outline-none"
+            className="cyber-input"
             required
           />
           <input
@@ -143,21 +147,21 @@ export default function RegisterPage() {
             type="email"
             placeholder="College Email"
             onChange={handleChange}
-            className="w-full p-3 rounded-xl bg-white/5 border border-cyan-500/20 text-white placeholder:text-white/20 focus:border-cyan-400 focus:outline-none"
+            className="cyber-input"
             required
           />
           <input
             name="phone"
             placeholder="Phone Number"
             onChange={handleChange}
-            className="w-full p-3 rounded-xl bg-white/5 border border-cyan-500/20 text-white placeholder:text-white/20 focus:border-cyan-400 focus:outline-none"
+            className="cyber-input"
             required
           />
           <input
             name="department"
             placeholder="Department (e.g., BCA)"
             onChange={handleChange}
-            className="w-full p-3 rounded-xl bg-white/5 border border-cyan-500/20 text-white placeholder:text-white/20 focus:border-cyan-400 focus:outline-none"
+            className="cyber-input"
             required
           />
           <input
@@ -165,26 +169,16 @@ export default function RegisterPage() {
             type="number"
             placeholder="Semester"
             onChange={handleChange}
-            className="w-full p-3 rounded-xl bg-white/5 border border-cyan-500/20 text-white placeholder:text-white/20 focus:border-cyan-400 focus:outline-none"
+            className="cyber-input"
             required
           />
 
-          <p className="text-cyan-400/60 text-xs uppercase tracking-wider font-semibold mt-2">
-            Select Interests
-          </p>
-          <div className="flex flex-wrap gap-2">
+          <span className="cyber-label">Select Interests</span>
+          <div className="cyber-checkbox-group">
             {["Web Dev", "AI/ML", "Cybersecurity", "Cloud", "App Dev"].map(
               (d) => (
-                <label
-                  key={d}
-                  className="flex items-center gap-1 bg-white/5 border border-cyan-500/10 px-3 py-1.5 rounded-full text-xs text-white/80 hover:border-cyan-500/30 transition cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    value={d}
-                    onChange={handleChange}
-                    className="accent-cyan-400"
-                  />{" "}
+                <label key={d} className="cyber-checkbox-label">
+                  <input type="checkbox" value={d} onChange={handleChange} />{" "}
                   {d}
                 </label>
               ),
@@ -195,7 +189,7 @@ export default function RegisterPage() {
             type="file"
             accept="image/*"
             onChange={(e) => setFile(e.target.files?.[0] || null)}
-            className="w-full p-2 rounded-xl bg-white/5 border border-cyan-500/20 text-white/80 text-xs file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-cyan-500/20 file:text-cyan-400 file:text-xs file:font-semibold hover:file:bg-cyan-500/30 transition"
+            className="cyber-file"
             required
           />
 
@@ -203,14 +197,11 @@ export default function RegisterPage() {
             name="suggestions"
             placeholder="Suggestions for the club?"
             onChange={handleChange}
-            className="w-full p-3 rounded-xl bg-white/5 border border-cyan-500/20 text-white placeholder:text-white/20 focus:border-cyan-400 focus:outline-none h-20 resize-none"
+            className="cyber-input resize-none"
+            style={{ height: "5rem" }}
           ></textarea>
 
-          <button
-            type="submit"
-            className="w-full py-3 rounded-xl bg-cyan-500/20 border border-cyan-500/30 text-white hover:bg-cyan-500/30 transition text-sm uppercase tracking-wider font-semibold"
-            disabled={loading}
-          >
+          <button type="submit" className="cyber-btn" disabled={loading}>
             {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
