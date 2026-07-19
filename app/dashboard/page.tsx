@@ -358,18 +358,10 @@ export default function DashboardPage() {
           }}
         >
           <div>
-            <h1
-              style={{
-                fontSize: "2rem",
-                fontWeight: 700,
-                color: "0 0 50px rgba(0,245,255,0.4)",
-              }}
-            >
+            <h1 style={{ fontSize: "2rem", fontWeight: 700, color: "0 0 50px rgba(0,245,255,0.4)" }}>
               DELITECH.IT.CLUB
             </h1>
-            <p
-              style={{ color: "rgba(95, 0, 212, 0.3)", fontSize: "0.8rem" }}
-            ></p>
+            <p style={{ color: "rgba(95, 0, 212, 0.3)", fontSize: "0.8rem" }}></p>
             <div
               style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
             >
