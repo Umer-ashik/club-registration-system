@@ -33,19 +33,6 @@ ChartJS.register(
   Title,
 );
 
-const ROLES = {
-  ADMIN: "ADMIN",
-  PRESIDENT: "PRESIDENT",
-  VICE_PRESIDENT: "VICE_PRESIDENT",
-  LECTURER: "LECTURER",
-};
-
-const ROLE_PASSWORDS = {
-  admin2026: ROLES.ADMIN,
-  president2026: ROLES.PRESIDENT,
-  vp2026: ROLES.VICE_PRESIDENT,
-  lecturer2026: ROLES.LECTURER,
-};
 
 export default function DashboardPage() {
   const [students, setStudents] = useState([]);
